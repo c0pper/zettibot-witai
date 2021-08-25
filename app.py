@@ -1,4 +1,5 @@
 import os
+import json
 import random
 import logging
 from telegram import Update
@@ -29,6 +30,8 @@ with open(picfile) as p, open(quotefile) as q, open(audiofile) as a:
     qlines = q.readlines()
     alines = a.readlines()
 
+with open('intents.json', 'r') as f:
+    intents = json.load(f)
 
 # Define Command Handlers
 def start(update: Update, context: CallbackContext):
@@ -40,7 +43,14 @@ def userText(update: Update, context: CallbackContext):
     """Function to reply to user text"""
     ai = Wit(access_token=AI_TOKEN)
     resp = ai.message(update.message.text)
-    update.message.reply_text(str(resp['intents'][0]['name']))
+    if resp['intents'][0]['confidene'] > 0.80:
+        detected_intent = resp['intents'][0]['name']
+        for intent in intents["intents"]:
+            if detected_intent == intent["tag"]:
+                update.message.reply_text(f"{random.choice(intent['responses'])}")
+    else:
+        update.message.reply_text(f"{random.choice(qlines)}")
+    # update.message.reply_text(str(resp['intents'][0]['name']))
 
 
 def send_audio(update: Update, context: CallbackContext) -> None:
