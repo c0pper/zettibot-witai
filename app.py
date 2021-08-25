@@ -46,7 +46,7 @@ def userText(update: Update, context: CallbackContext):
     resp = ai.message(update.message.text)
     print(resp['intents'])
     if resp['intents']:
-        if resp['intents'][0]['confidence'] > 0.80:
+        if resp['intents'][0]['confidence'] > 0.70:
             detected_intent = resp['intents'][0]['name']
             for intent in intents["intents"]:
                 if detected_intent == intent["tag"]:
