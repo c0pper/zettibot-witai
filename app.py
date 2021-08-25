@@ -45,7 +45,7 @@ def userText(update: Update, context: CallbackContext):
     resp = ai.message(update.message.text)
     if resp['intents'][0]['confidene'] > 0.80:
         detected_intent = resp['intents'][0]['name']
-        for intent in intents["intents"]:
+        for intent in intents["tag"]:
             if detected_intent == intent["tag"]:
                 update.message.reply_text(f"{random.choice(intent['responses'])}")
     else:
