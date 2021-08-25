@@ -43,7 +43,7 @@ def userText(update: Update, context: CallbackContext):
     """Function to reply to user text"""
     ai = Wit(access_token=AI_TOKEN)
     resp = ai.message(update.message.text)
-    if resp['intents'][0]['confidene'] > 0.80:
+    if resp['intents'][0]['confidence'] > 0.80:
         detected_intent = resp['intents'][0]['name']
         for intent in intents["tag"]:
             if detected_intent == intent["tag"]:
