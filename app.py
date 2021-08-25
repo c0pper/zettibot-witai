@@ -45,7 +45,7 @@ def userText(update: Update, context: CallbackContext):
     resp = ai.message(update.message.text)
     if resp['intents'][0]['confidence'] > 0.80:
         detected_intent = resp['intents'][0]['name']
-        for intent in intents["tag"]:
+        for intent in intents["intents"]:
             if detected_intent == intent["tag"]:
                 update.message.reply_text(f"{random.choice(intent['responses'])}")
     else:
@@ -78,6 +78,7 @@ def main():
     dp.add_handler(MessageHandler(Filters.text & ~Filters.command, userText))
 
     # starting the bot
+    # updater.start_polling()
     updater.start_webhook(listen="0.0.0.0",
                           port=PORT,
                           url_path=TELE_TOKEN,
