@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 HEROKU_URL = "https://zettibot-witai.herokuapp.com/"
 PORT = int(os.environ.get('PORT', '8433'))
-TELE_TOKEN = "919532199:AAFU7pBcj_L310q3Ud6QkKw2K6KFo9OvaN0"
+TELE_TOKEN = "672782236:AAGoWrNm-TtgElTe8Lb5jLTJvgm4yVuk6Wo"
 AI_TOKEN = "Q7EA3FPHULCOYH5DVZU3Y2PY43DKKOXW"
 
 
