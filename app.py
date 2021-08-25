@@ -2,6 +2,7 @@ import os
 import json
 import random
 import logging
+import rx
 from telegram import Update
 from telegram.ext import Updater, Dispatcher, CommandHandler, MessageHandler, Filters, CallbackContext
 from wit import Wit
@@ -43,11 +44,15 @@ def userText(update: Update, context: CallbackContext):
     """Function to reply to user text"""
     ai = Wit(access_token=AI_TOKEN)
     resp = ai.message(update.message.text)
-    if resp['intents'][0]['confidence'] > 0.80:
-        detected_intent = resp['intents'][0]['name']
-        for intent in intents["intents"]:
-            if detected_intent == intent["tag"]:
-                update.message.reply_text(f"{random.choice(intent['responses'])}")
+    print(resp['intents'])
+    if resp['intents']:
+        if resp['intents'][0]['confidence'] > 0.80:
+            detected_intent = resp['intents'][0]['name']
+            for intent in intents["intents"]:
+                if detected_intent == intent["tag"]:
+                    update.message.reply_text(f"{random.choice(intent['responses'])}")
+        else:
+            update.message.reply_text(f"{random.choice(qlines)}")
     else:
         update.message.reply_text(f"{random.choice(qlines)}")
     # update.message.reply_text(str(resp['intents'][0]['name']))
@@ -75,7 +80,8 @@ def main():
     dp.add_handler(CommandHandler("audio", send_audio))
     dp.add_handler(CommandHandler("pic", send_rand_photo))
     # registering Message Handler to reply to user messages
-    dp.add_handler(MessageHandler(Filters.text & ~Filters.command, userText))
+    dp.add_handler(MessageHandler(Filters.text & Filters.regex(rx.trigger_regex) & Filters.regex(rx.audio_regex) & Filters.regex(rx.inviare_regex) & ~Filters.command, send_audio))
+    dp.add_handler(MessageHandler(Filters.text & Filters.regex(rx.trigger_regex) & ~Filters.command, userText))
 
     # starting the bot
     # updater.start_polling()
