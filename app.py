@@ -3,7 +3,6 @@ import json
 import random
 import logging
 import rx
-import environ
 from telegram import Update
 from telegram.ext import Updater, Dispatcher, CommandHandler, MessageHandler, Filters, CallbackContext
 from wit import Wit
@@ -14,15 +13,11 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-env = environ.Env(
-    # set casting, default value
-    DEBUG=(bool, False)
-)
 
 HEROKU_URL = "https://zettibot-witai.herokuapp.com/"
 PORT = int(os.environ.get('PORT', '8433'))
-TELE_TOKEN = env('TELE_TOKEN')
-AI_TOKEN = env('AI_TOKEN')
+TELE_TOKEN = os.environ.get('TELE_TOKEN')
+AI_TOKEN = os.environ.get('AI_TOKEN')
 
 # Assets
 
