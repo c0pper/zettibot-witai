@@ -33,6 +33,7 @@ with open(picfile) as p, open(quotefile) as q, open(audiofile) as a:
 with open('intents.json', 'r') as f:
     intents = json.load(f)
 
+
 # Define Command Handlers
 def start(update: Update, context: CallbackContext):
     """Handler for /start command"""
