@@ -3,7 +3,7 @@ import json
 import random
 import logging
 import rx
-from boto.s3.connection import S3Connection
+import environ
 from telegram import Update
 from telegram.ext import Updater, Dispatcher, CommandHandler, MessageHandler, Filters, CallbackContext
 from wit import Wit
@@ -14,11 +14,15 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+env = environ.Env(
+    # set casting, default value
+    DEBUG=(bool, False)
+)
 
 HEROKU_URL = "https://zettibot-witai.herokuapp.com/"
 PORT = int(os.environ.get('PORT', '8433'))
-TELE_TOKEN = S3Connection(os.environ['TELE_TOKEN'])
-AI_TOKEN = S3Connection(os.environ['AI_TOKEN'])
+TELE_TOKEN = env('TELE_TOKEN')
+AI_TOKEN = env('AI_TOKEN')
 
 # Assets
 
