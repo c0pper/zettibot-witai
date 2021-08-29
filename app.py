@@ -3,6 +3,7 @@ import json
 import random
 import logging
 import rx
+import config
 from telegram import Update
 from telegram.ext import Updater, Dispatcher, CommandHandler, MessageHandler, Filters, CallbackContext
 from wit import Wit
@@ -16,8 +17,6 @@ logger = logging.getLogger(__name__)
 
 HEROKU_URL = "https://zettibot-witai.herokuapp.com/"
 PORT = int(os.environ.get('PORT', '8433'))
-TELE_TOKEN = "672782236:AAGoWrNm-TtgElTe8Lb5jLTJvgm4yVuk6Wo"
-AI_TOKEN = "Q7EA3FPHULCOYH5DVZU3Y2PY43DKKOXW"
 
 
 # Assets
@@ -42,7 +41,7 @@ def start(update: Update, context: CallbackContext):
 
 def userText(update: Update, context: CallbackContext):
     """Function to reply to user text"""
-    ai = Wit(access_token=AI_TOKEN)
+    ai = Wit(access_token=config.AI_TOKEN)
     resp = ai.message(update.message.text)
     print(resp['intents'])
     if resp['intents']:
@@ -70,7 +69,7 @@ def send_rand_photo(update: Update, context: CallbackContext) -> None:
 
 def main():
     """starting bot"""
-    updater = Updater(TELE_TOKEN, use_context=True)
+    updater = Updater(config.TELE_TOKEN, use_context=True)
 
     # getting the dispatchers to register handlers
     dp = updater.dispatcher
@@ -87,8 +86,8 @@ def main():
     # updater.start_polling()
     updater.start_webhook(listen="0.0.0.0",
                           port=PORT,
-                          url_path=TELE_TOKEN,
-                          webhook_url=HEROKU_URL + TELE_TOKEN)
+                          url_path=config.TELE_TOKEN,
+                          webhook_url=HEROKU_URL + config.TELE_TOKEN)
     updater.idle()
 
 
