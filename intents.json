@@ -501,7 +501,7 @@
         "Waglio vai a cacare vai",
         "Fatti una vita",
         "Tu perché non ti fai i cazzi tuoi vedi che campi 100 anni",
-        "A sfaccimm ra fatt omm",
+        "A sfaccimm ta fatt omm",
         "Pigl ma capokkia gulo",
         "Mi avete rotto il cazzo",
         "Ma tu che parli sempre è sfaccimm re cazz tuoi quanto te li fai",
@@ -756,6 +756,49 @@
         "E festa niente lavoro",
         "Tantissimi auguri o Zi vicienz",
         "Champagne 2 bottiglie"
+      ]
+    },
+    {
+      "tag": "insulto",
+      "patterns": [
+        "insulta Pasquale",
+        "prendi a parole Giovanni",
+        "digliene 4 a questo Marco"
+      ],
+      "responses": [
+        "sei un uomo di merda",
+        "vat fa na cacat",
+        "ma vattenn si",
+        "chi cazzo sei",
+        "vien for e cas nov vien",
+        "ti informo ca e sciem appriess non li vogliamo",
+        "pigl o gul",
+        "statt a cort a te",
+        "guardati le spalle da oggi che non si sa mai nella vita",
+        "statt accort a te",
+        "a sfaccimm ra cunferenz chi t la mai rat",
+        "'chiavat",
+        "chiavt a mammt",
+        "vedi di non rompere il cazzo che gia non si lavora",
+        "fiet è merd",
+        "omm e night",
+        "chiavt a nonnt",
+        "a uomo come ti senti",
+        "farà una brutta fine prima o poi",
+        "fammi vedere se hai le palle",
+        "tu nun t preoccupa'... a tien aparat",
+        "accort che ci vuole un attimo a chiudere gli occhi",
+        "chi cazzo la fatto entrare",
+        "a sfaccimm ta fatt omm",
+        "tu che parli sempre è sfaccimm re cazz tuoi quanto te li fai",
+        "ce fatt nu bukkin",
+        "cortesemente non mi dare confidenza ok",
+        "stai tutt appicciat",
+        "stai tutt magnat",
+        "ti piscio in testa",
+        "miett nu rit gul",
+        "vatt fa na cacat for megellina",
+        "non sei nessuno in questo gruppo"
       ]
     }
   ]

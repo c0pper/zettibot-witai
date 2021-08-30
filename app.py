@@ -44,13 +44,16 @@ def userText(update: Update, context: CallbackContext):
     """Function to reply to user text"""
     ai = Wit(access_token=AI_TOKEN)
     resp = ai.message(update.message.text)
-    print(resp['intents'])
     if resp['intents']:
         if resp['intents'][0]['confidence'] > 0.65:
             detected_intent = resp['intents'][0]['name']
             for intent in intents["intents"]:
                 if detected_intent == intent["tag"]:
-                    update.message.reply_text(f"{random.choice(intent['responses'])}")
+                    if intent["tag"] == "insulto":
+                        entity = resp["entities"]["person:object"][0]["body"]
+                        update.message.reply_text(f"{entity} {random.choice(intent['responses'])}")
+                    else:
+                        update.message.reply_text(f"{random.choice(intent['responses'])}")
         else:
             update.message.reply_text(f"{random.choice(qlines)}")
     else:
