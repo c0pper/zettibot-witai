@@ -52,6 +52,9 @@ def userText(update: Update, context: CallbackContext):
                     if intent["tag"] == "insulto":
                         entity = resp["entities"]["person:object"][0]["body"]
                         update.message.reply_text(f"{entity} {random.choice(intent['responses'])}")
+                    elif intent["tag"] == "audio":
+                        audio = random.choice(alines)
+                        update.message.reply_voice(audio)
                     else:
                         update.message.reply_text(f"{random.choice(intent['responses'])}")
         else:
@@ -61,9 +64,9 @@ def userText(update: Update, context: CallbackContext):
     # update.message.reply_text(str(resp['intents'][0]['name']))
 
 
-def send_audio(update: Update, context: CallbackContext) -> None:
-    audio = random.choice(alines)
-    update.message.reply_voice(audio)
+# def send_audio(update: Update, context: CallbackContext) -> None:
+#     audio = random.choice(alines)
+#     update.message.reply_voice(audio)
 
 
 def send_rand_photo(update: Update, context: CallbackContext) -> None:
@@ -80,10 +83,10 @@ def main():
 
     # registering commands
     dp.add_handler(CommandHandler("start", start))
-    dp.add_handler(CommandHandler("audio", send_audio))
+    # dp.add_handler(CommandHandler("audio", send_audio))
     dp.add_handler(CommandHandler("pic", send_rand_photo))
     # registering Message Handler to reply to user messages
-    dp.add_handler(MessageHandler(Filters.text & Filters.regex(rx.trigger_regex) & Filters.regex(rx.audio_regex) & Filters.regex(rx.inviare_regex) & ~Filters.command, send_audio))
+    # dp.add_handler(MessageHandler(Filters.text & Filters.regex(rx.trigger_regex) & Filters.regex(rx.audio_regex) & Filters.regex(rx.inviare_regex) & ~Filters.command, send_audio))
     dp.add_handler(MessageHandler(Filters.text & Filters.regex(rx.trigger_regex) & ~Filters.command, userText))
 
     # starting the bot

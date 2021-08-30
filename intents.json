@@ -800,6 +800,17 @@
         "vatt fa na cacat for megellina",
         "non sei nessuno in questo gruppo"
       ]
+    },
+    {
+      "tag": "audio",
+      "patterns": [
+        "fai un vocale",
+        "manda un audio",
+        "fai un audio",
+        "manda una registrazione",
+        "fai una rec",
+        "fai un bel vocale"
+      ]
     }
   ]
 }
