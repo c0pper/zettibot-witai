@@ -798,7 +798,8 @@
         "ti piscio in testa",
         "miett nu rit gul",
         "vatt fa na cacat for megellina",
-        "non sei nessuno in questo gruppo"
+        "non sei nessuno in questo gruppo",
+        "fatti vedere che ci facciamo una bella chiacchierata io e te"
       ]
     },
     {
@@ -810,6 +811,49 @@
         "manda una registrazione",
         "fai una rec",
         "fai un bel vocale"
+      ]
+    },
+    {
+      "tag": "parere",
+      "patterns": [
+        "@jiack_an come lo vedi brother",
+        "Brothers lo vedo un bravo ragazzo @EnzoG1926",
+        "Brother che ne pensi di Chiara?",
+        "Brother cosa ne pensi di Uby ?",
+        "Brodo che ne pensi di giacomo?"
+      ],
+      "responses": [
+        "e una bravissima persona",
+        "a omm comm s sent",
+        "e una grandissima persona",
+        "chi cazzo la messo nel gruppo",
+        "e io non abbiamo mai mangiato nello stesso piatto",
+        "ma cu te avanzass cocc cos fammi capire",
+        "lo prende in culo",
+        "sa campare fratello",
+        "e natu strunz",
+        "apre troppo la bocca.. in mezzo alla strada non dura",
+        "dice solo stronzate",
+        "m vuless mparà l'arenil a me ngap a iss",
+        "e l unica persona che si salva miez a sti sciem"
+      ]
+    },
+    {
+      "tag": "perche",
+      "patterns": [
+        "Perché Bros?",
+        "perche",
+        "come mai"
+      ],
+      "responses": [
+        "sono cazzi miei",
+        "tu fatti i cazzi tuoi",
+        "waglip chi si fa i cazzi suoi campa cient ann",
+        "waglio chi si fa i cazzi suoi campa cient ann",
+        "tu pensa hai cazzi tuoi",
+        "ma tu chi cazzo sei",
+        "non sono cose che ti riguardano",
+        "o ssacc i tu piens e fatt tuoj"
       ]
     }
   ]
