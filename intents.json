@@ -814,6 +814,15 @@
       ]
     },
     {
+      "tag": "foto",
+      "patterns": [
+        "manda una foto",
+        "manda un immagine",
+        "fai una foto",
+        "brother foto"
+      ]
+    },
+    {
       "tag": "parere",
       "patterns": [
         "@jiack_an come lo vedi brother",

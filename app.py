@@ -45,7 +45,7 @@ def userText(update: Update, context: CallbackContext):
     ai = Wit(access_token=AI_TOKEN)
     resp = ai.message(update.message.text)
     if resp['intents']:
-        if resp['intents'][0]['confidence'] > 0.65:
+        if resp['intents'][0]['confidence'] > 0.60:
             detected_intent = resp['intents'][0]['name']
             for intent in intents["intents"]:
                 if detected_intent == intent["tag"]:
@@ -55,6 +55,9 @@ def userText(update: Update, context: CallbackContext):
                     elif intent["tag"] == "audio":
                         audio = random.choice(alines)
                         update.message.reply_voice(audio)
+                    elif intent["tag"] == "foto":
+                        photo = random.choice(plines)
+                        update.message.reply_photo(photo, random.choice(qlines))
                     elif intent["tag"] == "parere":
                         entity = resp["entities"]["person:object"][0]["body"]
                         update.message.reply_text(f"{entity} {random.choice(intent['responses'])}")
