@@ -74,7 +74,7 @@ def userText(update: Update, context: CallbackContext):
                             print("no persona")
                             update.message.reply_text(random.choice(intent['responses']))
                     else:
-                        print("no corres tag")
+                        print("using found tag")
                         update.message.reply_text(f"{random.choice(intent['responses'])}")
         else:
             print("not enough confidence")
