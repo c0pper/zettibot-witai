@@ -63,6 +63,12 @@ def userText(update: Update, context: CallbackContext):
                         update.message.reply_text(f"{entity} {random.choice(intent['responses'])}")
                     elif intent["tag"] == "perche":
                         update.message.reply_text(random.choice(intent['responses']))
+                    elif intent["tag"] == "saluti":
+                        if resp["entities"]["person:object"][0]["body"]:
+                            entity = resp["entities"]["person:object"][0]["body"]
+                            update.message.reply_text(f"{entity} {random.choice(intent['responses'])}")
+                        else:
+                            update.message.reply_text(random.choice(intent['responses']))
                     else:
                         update.message.reply_text(f"{random.choice(intent['responses'])}")
         else:
