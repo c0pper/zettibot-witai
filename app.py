@@ -45,11 +45,13 @@ def userText(update: Update, context: CallbackContext):
     ai = Wit(access_token=AI_TOKEN)
     resp = ai.message(update.message.text)
     if resp['intents']:
+        print(resp['intents'][0]['name'])
         if resp['intents'][0]['confidence'] > 0.60:
             detected_intent = resp['intents'][0]['name']
             for intent in intents["intents"]:
                 if detected_intent == intent["tag"]:
                     if intent["tag"] == "insulto":
+                        print(resp["entities"])
                         entity = resp["entities"]["person:object"][0]["body"]
                         update.message.reply_text(f"{entity} {random.choice(intent['responses'])}")
                     elif intent["tag"] == "audio":
@@ -63,17 +65,22 @@ def userText(update: Update, context: CallbackContext):
                         update.message.reply_text(f"{entity} {random.choice(intent['responses'])}")
                     elif intent["tag"] == "perche":
                         update.message.reply_text(random.choice(intent['responses']))
-                    elif intent["tag"] == "saluti":
-                        if resp["entities"]["person:object"]:
+                    elif intent["tag"] == "saluti_persona":
+                        if "person:object" in resp["entities"]:
+                            print("persona")
                             entity = resp["entities"]["person:object"][0]["body"]
-                            update.message.reply_text(f"{entity} {random.choice(intent['responses'])}")
+                            update.message.reply_text(f"{random.choice(intent['responses'])} {entity}")
                         else:
+                            print("no persona")
                             update.message.reply_text(random.choice(intent['responses']))
                     else:
+                        print("no corres tag")
                         update.message.reply_text(f"{random.choice(intent['responses'])}")
         else:
+            print("not enough confidence")
             update.message.reply_text(f"{random.choice(qlines)}")
     else:
+        print("no response from witai")
         update.message.reply_text(f"{random.choice(qlines)}")
     # update.message.reply_text(str(resp['intents'][0]['name']))
 
