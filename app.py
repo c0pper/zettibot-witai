@@ -15,8 +15,8 @@ logger = logging.getLogger(__name__)
 
 HEROKU_URL = "https://zettibot-witai.herokuapp.com/"
 PORT = int(os.environ.get('PORT', '8433'))
-TELE_TOKEN = "672782236:AAEhfxCKDToCGzUYASrEWWJq1Rag1siZGT0" #os.environ.get('TELE_TOKEN')
-AI_TOKEN = "Q7EA3FPHULCOYH5DVZU3Y2PY43DKKOXW" #os.environ.get('AI_TOKEN')
+TELE_TOKEN = os.environ.get('TELE_TOKEN')
+AI_TOKEN = os.environ.get('AI_TOKEN')
 
 # Assets
 
@@ -111,11 +111,11 @@ def main():
     dp.add_handler(MessageHandler(Filters.text & Filters.regex(rx.trigger_regex) & ~Filters.command, userText))
 
     # starting the bot
-    updater.start_polling()
-    # updater.start_webhook(listen="0.0.0.0",
-    #                       port=PORT,
-    #                       url_path=TELE_TOKEN,
-    #                       webhook_url=HEROKU_URL + TELE_TOKEN)
+    # updater.start_polling()
+    updater.start_webhook(listen="0.0.0.0",
+                          port=PORT,
+                          url_path=TELE_TOKEN,
+                          webhook_url=HEROKU_URL + TELE_TOKEN)
     updater.idle()
 
 
