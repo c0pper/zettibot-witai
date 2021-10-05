@@ -61,8 +61,8 @@ def userText(update: Update, context: CallbackContext):
                         update.message.reply_photo(photo, random.choice(qlines))
                     elif intent["tag"] == "parere":
                         if "person:object" in resp["entities"]:
-                            print(entity)
                             entity = resp["entities"]["person:object"][0]["body"]
+                            print(entity)
                             update.message.reply_text(f"{entity} {random.choice(intent['responses'])}")
                         else:
                             print("no persona")
