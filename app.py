@@ -60,9 +60,13 @@ def userText(update: Update, context: CallbackContext):
                         photo = random.choice(plines)
                         update.message.reply_photo(photo, random.choice(qlines))
                     elif intent["tag"] == "parere":
-                        entity = resp["entities"]["person:object"][0]["body"]
-                        print(entity)
-                        update.message.reply_text(f"{entity} {random.choice(intent['responses'])}")
+                        if "person:object" in resp["entities"]:
+                            print(entity)
+                            entity = resp["entities"]["person:object"][0]["body"]
+                            update.message.reply_text(f"{entity} {random.choice(intent['responses'])}")
+                        else:
+                            print("no persona")
+                            update.message.reply_text(random.choice(intent['responses']))
                     elif intent["tag"] == "perche":
                         update.message.reply_text(random.choice(intent['responses']))
                     elif intent["tag"] == "saluti_persona":
