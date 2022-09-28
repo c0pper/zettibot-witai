@@ -115,12 +115,12 @@ def main():
     dp.add_handler(MessageHandler(Filters.text & Filters.regex(rx.trigger_regex) & ~Filters.command, userText))
 
     # starting the bot
-    # updater.start_polling()
-    updater.start_webhook(listen="0.0.0.0",
-                          port=PORT,
-                          url_path=TELE_TOKEN,
-                          webhook_url=HEROKU_URL + TELE_TOKEN)
-    updater.idle()
+    updater.start_polling()
+    # updater.start_webhook(listen="0.0.0.0",
+    #                       port=PORT,
+    #                       url_path=TELE_TOKEN,
+    #                       webhook_url=HEROKU_URL + TELE_TOKEN)
+    # updater.idle()
 
 
 if __name__ == '__main__':
