@@ -1,31 +1,34 @@
 import os
 import json
+from pathlib import Path
 import random
 import logging
 import rx
 from telegram import Update
 from telegram.ext import Updater, Dispatcher, CommandHandler, MessageHandler, Filters, CallbackContext
 from wit import Wit
+from dotenv import load_dotenv
 
+load_dotenv()
 # Enable logging
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO
 )
 logger = logging.getLogger(__name__)
 
-HEROKU_URL = "https://zettibot-witai.herokuapp.com/"
+
 PORT = int(os.environ.get('PORT', '8433'))
 TELE_TOKEN = os.environ.get('TELE_TOKEN')
 AI_TOKEN = os.environ.get('AI_TOKEN')
 
 # Assets
 
-picfile = 'pics.txt'
+photos = list(Path("pics").glob("*"))
+audios = list(Path("audio").glob("*"))
 quotefile = 'quotes.txt'
 audiofile = 'audio.txt'
 
-with open(picfile) as p, open(quotefile) as q, open(audiofile) as a:
-    plines = p.readlines()
+with open(quotefile) as q, open(audiofile) as a:
     qlines = q.readlines()
     alines = a.readlines()
 
@@ -36,7 +39,7 @@ with open('intents.json', 'r') as f:
 # Define Command Handlers
 def start(update: Update, context: CallbackContext):
     """Handler for /start command"""
-    update.message.reply_text('Hi, how are you')
+    update.message.reply_text('Mo accumminciamm nata vot mo')
 
 
 def userText(update: Update, context: CallbackContext):
@@ -54,11 +57,11 @@ def userText(update: Update, context: CallbackContext):
                         print(entity)
                         update.message.reply_text(f"{entity} {random.choice(intent['responses'])}")
                     elif intent["tag"] == "audio":
-                        audio = random.choice(alines)
-                        update.message.reply_voice(audio)
+                        audio = random.choice(audios)
+                        update.message.reply_voice(open(audio, "rb"))
                     elif intent["tag"] == "foto":
-                        photo = random.choice(plines)
-                        update.message.reply_photo(photo, random.choice(qlines))
+                        photo = random.choice(photos) 
+                        update.message.reply_photo(open(photo, "rb"), random.choice(qlines))
                     elif intent["tag"] == "parere":
                         if "person:object" in resp["entities"]:
                             entity = resp["entities"]["person:object"][0]["body"]
@@ -89,14 +92,14 @@ def userText(update: Update, context: CallbackContext):
     # update.message.reply_text(str(resp['intents'][0]['name']))
 
 
-# def send_audio(update: Update, context: CallbackContext) -> None:
-#     audio = random.choice(alines)
-#     update.message.reply_voice(audio)
+def send_audio(update: Update, context: CallbackContext) -> None:
+    audio = random.choice(audios)
+    update.message.reply_voice(open(audio, "rb"))
 
 
 def send_rand_photo(update: Update, context: CallbackContext) -> None:
-    photo = random.choice(plines)
-    update.message.reply_photo(photo, random.choice(qlines))
+    photo = random.choice(photos) #open("pics/xp.jpg", "rb")
+    update.message.reply_photo(open(photo, "rb"), random.choice(qlines))
 
 
 def main():
@@ -108,7 +111,7 @@ def main():
 
     # registering commands
     dp.add_handler(CommandHandler("start", start))
-    # dp.add_handler(CommandHandler("audio", send_audio))
+    dp.add_handler(CommandHandler("audio", send_audio))
     dp.add_handler(CommandHandler("pic", send_rand_photo))
     # registering Message Handler to reply to user messages
     # dp.add_handler(MessageHandler(Filters.text & Filters.regex(rx.trigger_regex) & Filters.regex(rx.audio_regex) & Filters.regex(rx.inviare_regex) & ~Filters.command, send_audio))
