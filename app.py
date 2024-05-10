@@ -8,7 +8,7 @@ from telegram import Update
 from telegram.ext import Updater, Dispatcher, CommandHandler, MessageHandler, Filters, CallbackContext
 from wit import Wit
 from dotenv import load_dotenv
-from generative import llm, is_ollama_available, prompts
+from generative import llm, is_ollama_available, prompts, base_prompt
 import re
 
 load_dotenv()
@@ -73,6 +73,12 @@ def userText(update: Update, context: CallbackContext):
                                 examples="\n".join(examples),
                                 entity=entity
                             )
+                            
+                            base_prompt.format(
+                                system_prompt=prompts["insulto"]["system"], 
+                                user_prompt=prompts["insulto"]["user"].format(examples=examples, message=user_message)
+                            )
+                            
                             print(formatted_prompt)
                             llm_reponse = remove_parenthesis(llm.invoke(formatted_prompt))
                             llm_reponse = llm_reponse.replace("\"", "")

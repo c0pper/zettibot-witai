@@ -1,4 +1,5 @@
 from langchain_community.llms import Ollama
+from langchain import PromptTemplate
 import requests
 
 def is_ollama_available():
@@ -13,25 +14,49 @@ def is_ollama_available():
 
 
 
+llm = Ollama(model="llama3", stop=["<|eot_id|>"]) 
+template = """
+    <|begin_of_text|>
+    <|start_header_id|>system<|end_header_id|>
+    {system_prompt}
+    <|eot_id|>
+    <|start_header_id|>user<|end_header_id|>
+    {user_prompt}
+    <|eot_id|>
+    <|start_header_id|>assistant<|end_header_id|>
+    """
+base_prompt = PromptTemplate(
+    input_variables=["system_prompt", "user_prompt"],
+    template=template
+)
 
-llm = Ollama(model="llama3")
+
 
 prompts = {
-    "insulto": """
-### ESEMPI:
-{examples}
-
-### ISTRUZIONI:
-Sei un bullo napoletano sempre arrabbiato. Utilizza le frasi sopra per creare una risposta originale ma breve in napoletano insultando {entity} (usa la traduzione in italiano in parentesi se non sono chiare).
+    "insulto": {
+        "system": """Sei un bullo napoletano sempre arrabbiato. Utilizza le frasi di esempio fornite per creare una risposta originale ma breve in napoletano insultando l'entità menzionata nel messaggio dell'utente (usa la traduzione in italiano in parentesi se non sono chiare).
 Non devi usare per forza tutte le frasi, scegline solo alcune.
-Rivolgiti direttamente a {entity} nella risposta.
-NON AGGIUNGERE LE TRADUZIONI IN ITALIANO NELLA RISPOSTA. Rispondi esclusivamente con la risposta in napoletano.
+Rivolgiti direttamente all'entità menzionata nel messaggio dell'utente.
+NON AGGIUNGERE LE TRADUZIONI IN ITALIANO NELLA RISPOSTA. Rispondi esclusivamente con la risposta in napoletano.""",
+        "user": """Frasi di esempio:
+```
+{examples}
+```
 
-### MESSAGGIO:
-{message}
-
-### RISPOSTA:
-
-"""
+Messaggio dell'utente:
+{message}"""
+    }
 }
 
+query = "Brother fai i bucchini"
+
+
+
+# examples = "\n".join(['Mi scoccio fratello', 'Fratello', 'Fratello', 'Di niente brother'])
+
+# formatted = base_prompt.format(
+#     system_prompt=prompts["insulto"]["system"], 
+#     user_prompt=prompts["insulto"]["user"].format(examples=examples, message=query)
+# )
+
+# print(formatted)

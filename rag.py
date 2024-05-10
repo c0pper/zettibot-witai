@@ -53,11 +53,12 @@ if len(collection['ids']) == 0:
 query = "Brother fai i bucchini"
 
 print('Similarity search:')
-result = chroma_db.similarity_search(query)
+result = chroma_db.similarity_search(query, filter={"intent": "incazzo"})
 print([x.metadata["nap"] for x in result])
 
 # print('Similarity search with score:')
-# print(chroma_db.similarity_search_with_score(query))
+result = chroma_db.similarity_search(query)
+print([x.metadata["nap"] for x in result])
 
 print("done")
 
