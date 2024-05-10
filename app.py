@@ -8,6 +8,8 @@ from telegram import Update
 from telegram.ext import Updater, Dispatcher, CommandHandler, MessageHandler, Filters, CallbackContext
 from wit import Wit
 from dotenv import load_dotenv
+from generative import llm, is_ollama_available, prompts
+import re
 
 load_dotenv()
 # Enable logging
@@ -21,6 +23,8 @@ PORT = int(os.environ.get('PORT', '8433'))
 TELE_TOKEN = os.environ.get('TELE_TOKEN')
 AI_TOKEN = os.environ.get('AI_TOKEN')
 
+
+
 # Assets
 
 photos = list(Path("pics").glob("*"))
@@ -28,13 +32,17 @@ audios = list(Path("audio").glob("*"))
 quotefile = 'quotes.txt'
 audiofile = 'audio.txt'
 
-with open(quotefile) as q, open(audiofile) as a:
+with open(quotefile) as q:
     qlines = q.readlines()
-    alines = a.readlines()
 
 with open('intents.json', 'r') as f:
     intents = json.load(f)
 
+
+def remove_parenthesis(text):
+    text = re.sub(r'\([^)]*\)', '', text)
+    text = re.sub(r'\[[^)]*\]', '', text)
+    return text
 
 # Define Command Handlers
 def start(update: Update, context: CallbackContext):
@@ -45,23 +53,41 @@ def start(update: Update, context: CallbackContext):
 def userText(update: Update, context: CallbackContext):
     """Function to reply to user text"""
     ai = Wit(access_token=AI_TOKEN)
-    resp = ai.message(update.message.text)
+    user_message = update.message.text
+    resp = ai.message(user_message)
     if resp['intents']:
         print(resp['intents'][0]['name'])
         if resp['intents'][0]['confidence'] > 0.60:
             detected_intent = resp['intents'][0]['name']
             for intent in intents["intents"]:
                 if detected_intent == intent["tag"]:
+
                     if intent["tag"] == "insulto":
                         entity = resp["entities"]["person:object"][0]["body"]
                         print(entity)
-                        update.message.reply_text(f"{entity} {random.choice(intent['responses'])}")
+                        # update.message.reply_text(f"{entity} {random.choice(intent['responses'])['nap']}")
+                        if is_ollama_available():
+                            examples = [f"{x['nap']} ({x['it']})" for x in random.sample(intent['responses'], 3)]
+                            formatted_prompt = prompts["insulto"].format(
+                                message=user_message, 
+                                examples="\n".join(examples),
+                                entity=entity
+                            )
+                            print(formatted_prompt)
+                            llm_reponse = remove_parenthesis(llm.invoke(formatted_prompt))
+                            llm_reponse = llm_reponse.replace("\"", "")
+                            llm_reponse = llm_reponse.replace("### RISPOSTA:", "")
+                            print(llm_reponse)
+                            update.message.reply_text(llm_reponse)
+
                     elif intent["tag"] == "audio":
                         audio = random.choice(audios)
                         update.message.reply_voice(open(audio, "rb"))
+
                     elif intent["tag"] == "foto":
                         photo = random.choice(photos) 
                         update.message.reply_photo(open(photo, "rb"), random.choice(qlines))
+
                     elif intent["tag"] == "parere":
                         if "person:object" in resp["entities"]:
                             entity = resp["entities"]["person:object"][0]["body"]
@@ -70,8 +96,10 @@ def userText(update: Update, context: CallbackContext):
                         else:
                             print("no persona")
                             update.message.reply_text(random.choice(intent['responses']))
+
                     elif intent["tag"] == "perche":
                         update.message.reply_text(random.choice(intent['responses']))
+
                     elif intent["tag"] == "saluti_persona":
                         if "person:object" in resp["entities"]:
                             print("persona")
@@ -80,16 +108,18 @@ def userText(update: Update, context: CallbackContext):
                         else:
                             print("no persona")
                             update.message.reply_text(random.choice(intent['responses']))
+
                     else:
                         print(f"using found tag {intent['tag']}")
                         update.message.reply_text(f"{random.choice(intent['responses'])}")
+
         else:
             print("not enough confidence")
             update.message.reply_text(f"{random.choice(qlines)}")
+
     else:
         print("no response from witai")
         update.message.reply_text(f"{random.choice(qlines)}")
-    # update.message.reply_text(str(resp['intents'][0]['name']))
 
 
 def send_audio(update: Update, context: CallbackContext) -> None:
