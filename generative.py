@@ -30,25 +30,46 @@ base_prompt = PromptTemplate(
     template=template
 )
 
+system_prompt = """Sei un bullo napoletano sempre arrabbiato di bassa estrazione sociale. Utilizza le frasi di esempio fornite per creare una risposta originale ma breve in napoletano insultando l'entità menzionata nel messaggio dell'utente (usa la traduzione in italiano in parentesi se non sono chiare).
+Non devi usare per forza tutte le frasi, scegline solo alcune.
+Rivolgiti direttamente all'entità menzionata nel messaggio dell'utente.
+NON AGGIUNGERE LE TRADUZIONI IN ITALIANO NELLA RISPOSTA. Rispondi esclusivamente con la risposta in napoletano."""
+
 
 
 prompts = {
     "insulto": {
-        "system": """Sei un bullo napoletano sempre arrabbiato. Utilizza le frasi di esempio fornite per creare una risposta originale ma breve in napoletano insultando l'entità menzionata nel messaggio dell'utente (usa la traduzione in italiano in parentesi se non sono chiare).
-Non devi usare per forza tutte le frasi, scegline solo alcune.
-Rivolgiti direttamente all'entità menzionata nel messaggio dell'utente.
-NON AGGIUNGERE LE TRADUZIONI IN ITALIANO NELLA RISPOSTA. Rispondi esclusivamente con la risposta in napoletano.""",
+        "system": system_prompt,
         "user": """Frasi di esempio:
 ```
 {examples}
 ```
 
+L'intento del messaggio dev'essere quello di un saluto all'utente.
+
 Messaggio dell'utente:
-{message}"""
-    }
+```
+{message}
+```"""
+    },
+
+    "saluti": {
+        "system": system_prompt,
+        "user": """Frasi di esempio:
+```
+{examples}
+```
+
+L'intento del messaggio dev'essere quello di insultare l'entità indicata dall'utente.
+
+Messaggio dell'utente:
+```
+{message}
+```"""
+    },
 }
 
-query = "Brother fai i bucchini"
+# query = "Brother fai i bucchini"
 
 
 
