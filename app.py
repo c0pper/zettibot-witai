@@ -20,7 +20,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-
 PORT = int(os.environ.get('PORT', '8433'))
 TELE_TOKEN = os.environ.get('TELE_TOKEN')
 AI_TOKEN = os.environ.get('AI_TOKEN')
@@ -50,7 +49,7 @@ def reply_with_ollama(update: Update, context: CallbackContext, intent):
     url = f'{os.getenv("OLLAMA_FLASK_SERVICE")}/generate_message'
 
     try:
-        print("\n\tTrying to generate LLM Message...")
+        logger.info("\n\tTrying to generate LLM Message...")
         user_message = update.message.text
 
         response = requests.post(url, json={
@@ -68,12 +67,12 @@ def reply_with_ollama(update: Update, context: CallbackContext, intent):
                 reply_to_message_id=update.message.message_id, 
                 reply_markup=reply_markup
             )
-            print(f"\t\tLLM Message: {llm_response}")
+            logger.info(f"\t\tLLM Message: {llm_response}")
         else:
-            print("\t\tLLM message not generated, is Ollama able to find model?")
+            logger.info("\t\tLLM message not generated, is Ollama able to find model?")
 
     except requests.RequestException as e:
-        print("\n\nCould not generate LLM message:", e)
+        logger.info("\n\nCould not generate LLM message:", e)
         return None
 
 
@@ -86,15 +85,15 @@ def start(update: Update, context: CallbackContext):
 def userText(update: Update, context: CallbackContext):
     """Function to reply to user text"""
 
-    print (f"\n\n[+] Request from: {update.message.from_user.full_name} - {update.message.from_user.name}\n\n")
+    logger.info (f"\n\n[+] Request from: {update.message.from_user.full_name} - {update.message.from_user.name}\n\n")
 
     ai = Wit(access_token=AI_TOKEN)
     user_message = update.message.text
-    print (f"\tMessage: {user_message}\n\n")
+    logger.info (f"\tMessage: {user_message}\n\n")
 
     resp = ai.message(user_message)
     if resp['intents']:
-        print(f"\tIntent: {resp['intents'][0]['name']}")
+        logger.info(f"\tIntent: {resp['intents'][0]['name']}")
         if resp['intents'][0]['confidence'] > 0.60:
             detected_intent = resp['intents'][0]['name']
             for intent in intents["intents"]:
@@ -102,7 +101,7 @@ def userText(update: Update, context: CallbackContext):
 
                     if intent["tag"] == "insulto":
                         entity = resp["entities"]["person:object"][0]["body"]
-                        print(entity)
+                        logger.info(entity)
 
                         random_sample = random.choice(intent['responses'])['nap']
                         context.bot.send_message(
@@ -117,7 +116,7 @@ def userText(update: Update, context: CallbackContext):
 
                     elif intent["tag"] == "saluti_persona":
                         if "person:object" in resp["entities"]:
-                            print("persona")
+                            logger.info("persona")
                             entity = resp["entities"]["person:object"][0]["body"]
 
                             random_sample = random.choice(intent['responses'])['nap']
@@ -131,7 +130,7 @@ def userText(update: Update, context: CallbackContext):
                             reply_with_ollama(update=update, context=context, intent=intent["tag"])
 
                     elif intent["tag"] == "saluti":
-                            print("no persona")
+                            logger.info("no persona")
 
                             random_sample = random.choice(intent['responses'])['nap']
                             context.bot.send_message(
@@ -155,11 +154,11 @@ def userText(update: Update, context: CallbackContext):
                         random_sample = random.choice(intent['responses'])['nap']
                         if "person:object" in resp["entities"]:
                             entity = resp["entities"]["person:object"][0]["body"]
-                            print(entity)
+                            logger.info(entity)
                             answer_text = f"{entity} {random_sample}"
 
                         else:
-                            print("no persona")
+                            logger.info("no persona")
                             answer_text = f"{random_sample}"
                         
                         context.bot.send_message(
@@ -252,11 +251,11 @@ def userText(update: Update, context: CallbackContext):
                         random_sample = random.choice(intent['responses'])['nap']
                         if "person:object" in resp["entities"]:
                             entity = resp["entities"]["person:object"][0]["body"]
-                            print(entity)
+                            logger.info(entity)
                             answer_text = f"{entity} {random_sample}"
 
                         else:
-                            print("no persona")
+                            logger.info("no persona")
                             answer_text = f"{random_sample}"
 
                         context.bot.send_message(
@@ -269,16 +268,44 @@ def userText(update: Update, context: CallbackContext):
                         reply_with_ollama(update=update, context=context, intent=intent["tag"])
 
                     else:
-                        print(f"using found tag {intent['tag']}")
-                        update.message.reply_text(f"{random.choice(intent['responses'])}")
+                        logger.info(f"using found tag {intent['tag']}")
+
+                        random_sample = random.choice(intent['responses'])['nap']
+                        context.bot.send_message(
+                            chat_id=update.message.chat_id, 
+                            text=random_sample, 
+                            reply_to_message_id=update.message.message_id, 
+                            
+                        )
+                        
+                        reply_with_ollama(update=update, context=context, intent=intent["tag"])
 
         else:
-            print("not enough confidence")
+            logger.info("not enough confidence")
+            random_sample = random.choice(intent['responses'])['nap']
+            context.bot.send_message(
+                chat_id=update.message.chat_id, 
+                text=random_sample, 
+                reply_to_message_id=update.message.message_id, 
+                
+            )
+            
+            reply_with_ollama(update=update, context=context, intent=intent["tag"])
             update.message.reply_text(f"{random.choice(qlines)}")
 
     else:
-        print("no response from witai")
-        update.message.reply_text(f"{random.choice(qlines)}")
+        logger.info("no response from witai")
+        random_sample = random.choice(qlines)
+        context.bot.send_message(
+            chat_id=update.message.chat_id, 
+            text=random_sample, 
+            reply_to_message_id=update.message.message_id, 
+            
+        )
+        
+        all_intents = [i["tag"] for i in intents["intents"]]
+        random_intent = random.choice(all_intents)
+        reply_with_ollama(update=update, context=context, intent=random_intent)
 
 
 def handle_feedback(update: Update, context: CallbackContext):
@@ -300,12 +327,12 @@ def handle_feedback(update: Update, context: CallbackContext):
     
     if query.data == 'feedback_yes':
         feedback["feedback"] = query.data
-        print(f"\t\tFeedback: {query.data}")
+        logger.info(f"\t\tFeedback: {query.data}")
         with open(os.path.join("feedback/yes", filename), "w") as file:
             json.dump(feedback, file, indent=4)
     elif query.data == 'feedback_no':
         feedback["feedback"] = query.data
-        print(f"\t\tFeedback: {query.data}")
+        logger.info(f"\t\tFeedback: {query.data}")
         with open(os.path.join("feedback/no", filename), "w") as file:
             json.dump(feedback, file, indent=4)
     query.edit_message_text(bot_answer + "\n\nGrazie del feedback brother")
