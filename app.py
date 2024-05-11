@@ -70,7 +70,8 @@ def reply_with_ollama(update: Update, context: CallbackContext, intent):
             }
         )
         response.raise_for_status()  # Raise an exception for 4xx or 5xx status codes
-        llm_response = response.json().get('llm_response').replace("!", "\!") + "\n\n_Funzione sperimentale_"
+        llm_response = llm_response.replace("!", "\!").replace(".", "\.")
+        llm_response = response.json().get('llm_response') + "\n\n_Funzione sperimentale_"
 
         if len(llm_response) > 2:
             context.bot.send_message(
