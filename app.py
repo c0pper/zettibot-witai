@@ -7,8 +7,8 @@ import logging
 
 import requests
 import rx
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
-from telegram.ext import Updater, Dispatcher, CommandHandler, MessageHandler, Filters, CallbackContext, CallbackQueryHandler
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update, ParseMode
+from telegram.ext import Updater, Dispatcher, CommandHandler, MessageHandler, Filters, CallbackContext, CallbackQueryHandler, Defaults
 from telegram.ext.filters import MessageFilter
 from wit import Wit
 from dotenv import load_dotenv
@@ -24,6 +24,7 @@ logger = logging.getLogger(__name__)
 PORT = int(os.environ.get('PORT', '8433'))
 TELE_TOKEN = os.environ.get('TELE_TOKEN')
 AI_TOKEN = os.environ.get('AI_TOKEN')
+
 
 
 class FilterAwesome(MessageFilter):
@@ -45,7 +46,7 @@ quotefile = 'quotes.txt'
 audiofile = 'audio.txt'
 
 keyboard = [
-    [InlineKeyboardButton("👍 Spaccat", callback_data='feedback_yes'), InlineKeyboardButton("Fo cess", callback_data='feedback_no')]
+    [InlineKeyboardButton("👍 Spaccat", callback_data='feedback_yes'), InlineKeyboardButton("👎 Fo cess", callback_data='feedback_no')]
 ]
 reply_markup = InlineKeyboardMarkup(keyboard)
 
@@ -69,14 +70,15 @@ def reply_with_ollama(update: Update, context: CallbackContext, intent):
             }
         )
         response.raise_for_status()  # Raise an exception for 4xx or 5xx status codes
-        llm_response = response.json().get('llm_response')
+        llm_response = response.json().get('llm_response').replace("!", "\!") + "\n\n_Funzione sperimentale_"
 
         if len(llm_response) > 2:
             context.bot.send_message(
                 chat_id=update.message.chat_id, 
                 text=llm_response,
                 reply_to_message_id=update.message.message_id, 
-                reply_markup=reply_markup
+                reply_markup=reply_markup,
+                parse_mode=ParseMode.MARKDOWN_V2
             )
             logger.info(f"\t\tLLM Message: {llm_response}")
         else:
@@ -90,12 +92,11 @@ def reply_with_ollama(update: Update, context: CallbackContext, intent):
 # Define Command Handlers
 def start(update: Update, context: CallbackContext):
     """Handler for /start command"""
-    update.message.reply_text('Mo accumminciamm nata vot mo')
+    update.message.reply_text('Mo accumminciamm nata vot mo', parse_mode=ParseMode())
 
 
 def userText(update: Update, context: CallbackContext):
     """Function to reply to user text"""
-
     logger.info (f"\n\n[+] Request from: {update.message.from_user.full_name} - {update.message.from_user.name}\n\n")
 
     ai = Wit(access_token=AI_TOKEN)
@@ -314,7 +315,7 @@ def userText(update: Update, context: CallbackContext):
             
         )
         
-        all_intents = [i["tag"] for i in intents["intents"]]
+        all_intents = [i["tag"] for i in intents["intents"] if i["tag"] not in ["parere", "insulto", "saluti_persona", "auguri"]]
         random_intent = random.choice(all_intents)
         reply_with_ollama(update=update, context=context, intent=random_intent)
 
@@ -341,12 +342,13 @@ def handle_feedback(update: Update, context: CallbackContext):
         logger.info(f"\t\tFeedback: {query.data}")
         with open(os.path.join("feedback/yes", filename), "w") as file:
             json.dump(feedback, file, indent=4)
+        query.edit_message_text(bot_answer + "\n\nGrazie brother quando vieni al bar mary stai pavat")
     elif query.data == 'feedback_no':
         feedback["feedback"] = query.data
         logger.info(f"\t\tFeedback: {query.data}")
         with open(os.path.join("feedback/no", filename), "w") as file:
             json.dump(feedback, file, indent=4)
-    query.edit_message_text(bot_answer + "\n\nGrazie del feedback brother")
+        query.edit_message_text(bot_answer + "\n\nAzz no ma m fa piacer")
     
 
 
