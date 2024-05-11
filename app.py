@@ -90,6 +90,8 @@ def userText(update: Update, context: CallbackContext):
 
     ai = Wit(access_token=AI_TOKEN)
     user_message = update.message.text
+    print (f"\tMessage: {user_message}\n\n")
+
     resp = ai.message(user_message)
     if resp['intents']:
         print(f"\tIntent: {resp['intents'][0]['name']}")
@@ -291,20 +293,24 @@ def handle_feedback(update: Update, context: CallbackContext):
         "bot_answer": bot_answer,
         "user_message": user_message
     }
-    if query.data == 'feedback_yes':
-        feedback["feedback"] = query.data
-        print(feedback)
-    elif query.data == 'feedback_no':
-        feedback["feedback"] = query.data
-        print(feedback)
-    query.edit_message_text(bot_answer + "\n\nGrazie del feedback brother")
-    
+
     current_date = datetime.datetime.now().strftime("%d_%m_%Y")
     processed_handle = re.sub(r'\W+', '', query.from_user.name)
     filename = f"{processed_handle}_{current_date}_{query.data}.json"
+    
+    if query.data == 'feedback_yes':
+        feedback["feedback"] = query.data
+        print(f"\t\tFeedback: {query.data}")
+        with open(os.path.join("feedback/yes", filename), "w") as file:
+            json.dump(feedback, file, indent=4)
+    elif query.data == 'feedback_no':
+        feedback["feedback"] = query.data
+        print(f"\t\tFeedback: {query.data}")
+        with open(os.path.join("feedback/no", filename), "w") as file:
+            json.dump(feedback, file, indent=4)
+    query.edit_message_text(bot_answer + "\n\nGrazie del feedback brother")
+    
 
-    with open(os.path.join("feedback", filename), "w") as file:
-        json.dump(feedback, file, indent=4)
 
 
 
@@ -335,7 +341,7 @@ def main():
     # dp.add_handler(MessageHandler(Filters.text & Filters.regex(rx.trigger_regex) & Filters.regex(rx.audio_regex) & Filters.regex(rx.inviare_regex) & ~Filters.command, send_audio))
     dp.add_handler(MessageHandler(Filters.text & Filters.regex(rx.trigger_regex) & ~Filters.command, userText))
     dp.add_handler(CallbackQueryHandler(handle_feedback))
-    dp.add_handler(MessageHandler(Filters.reply, userText))
+    # dp.add_handler(MessageHandler(Filters.reply, userText))
 
     # starting the bot
     updater.start_polling()
