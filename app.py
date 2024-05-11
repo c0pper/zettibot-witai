@@ -335,20 +335,21 @@ def handle_feedback(update: Update, context: CallbackContext):
         "user_message": user_message
     }
 
-    current_date = datetime.datetime.now().strftime("%d_%m_%Y")
+    current_date = datetime.datetime.now().strftime("%d_%m_%Y-%H_%M_%S")
+
     processed_handle = re.sub(r'\W+', '', query.from_user.name)
     filename = f"{processed_handle}_{current_date}_{query.data}.json"
     
     if query.data == 'feedback_yes':
         feedback["feedback"] = query.data
         logger.info(f"\t\tFeedback: {query.data}")
-        with open(os.path.join("feedback/yes", filename), "w") as file:
+        with open(os.path.join("feedback", "yes", filename), "w") as file:
             json.dump(feedback, file, indent=4)
         query.edit_message_text(bot_answer + "\n\nGrazie brother quando vieni al bar mary stai pavat")
     elif query.data == 'feedback_no':
         feedback["feedback"] = query.data
         logger.info(f"\t\tFeedback: {query.data}")
-        with open(os.path.join("feedback/no", filename), "w") as file:
+        with open(os.path.join("feedback", "no", filename), "w") as file:
             json.dump(feedback, file, indent=4)
         query.edit_message_text(bot_answer + "\n\nAzz no ma m fa piacer")
     
