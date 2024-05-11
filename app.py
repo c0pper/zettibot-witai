@@ -9,6 +9,7 @@ import requests
 import rx
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import Updater, Dispatcher, CommandHandler, MessageHandler, Filters, CallbackContext, CallbackQueryHandler
+from telegram.ext.filters import MessageFilter
 from wit import Wit
 from dotenv import load_dotenv
 import re
@@ -24,6 +25,16 @@ PORT = int(os.environ.get('PORT', '8433'))
 TELE_TOKEN = os.environ.get('TELE_TOKEN')
 AI_TOKEN = os.environ.get('AI_TOKEN')
 
+
+class FilterAwesome(MessageFilter):
+    def filter(self, message):
+        # return 'python-telegram-bot is awesome' in message.text
+        if message.reply_to_message:
+            return str(message.reply_to_message.from_user.id) == "672782236"
+        else:
+            return False
+    
+filter_awesome = FilterAwesome()
 
 
 # Assets
@@ -368,6 +379,7 @@ def main():
     # dp.add_handler(MessageHandler(Filters.text & Filters.regex(rx.trigger_regex) & Filters.regex(rx.audio_regex) & Filters.regex(rx.inviare_regex) & ~Filters.command, send_audio))
     dp.add_handler(MessageHandler(Filters.text & Filters.regex(rx.trigger_regex) & ~Filters.command, userText))
     dp.add_handler(CallbackQueryHandler(handle_feedback))
+    dp.add_handler(MessageHandler(filter_awesome, userText))
     # dp.add_handler(MessageHandler(Filters.reply, userText))
 
     # starting the bot

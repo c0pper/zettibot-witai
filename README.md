@@ -3,4 +3,4 @@ A Telegram bot based on a real person. It is constantly learning by interacting 
 
 ## Build
 docker build --network=host -t zettibot-witai .
-docker run -d --name zettibot zettibot-witai
+docker run -d --network=host --name zettibot zettibot-witai
