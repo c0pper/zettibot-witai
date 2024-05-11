@@ -4,14 +4,14 @@ import json
 from pathlib import Path
 import random
 import logging
+
+import requests
 import rx
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import Updater, Dispatcher, CommandHandler, MessageHandler, Filters, CallbackContext, CallbackQueryHandler
 from wit import Wit
 from dotenv import load_dotenv
-from generative import llm, is_ollama_available, prompts, base_prompt
 import re
-from rag import chroma_db
 
 load_dotenv()
 # Enable logging
@@ -46,49 +46,35 @@ with open('intents.json', 'r') as f:
     intents = json.load(f)
 
 
-def remove_parenthesis(text):
-    text = re.sub(r'\([^)]*\)', '', text)
-    text = re.sub(r'\[[^)]*\]', '', text)
-    return text
-
-
-def format_llm_prompt(user_message, examples):
-    formatted_prompt = base_prompt.format(
-        system_prompt=prompts["insulto"]["system"], 
-        user_prompt=prompts["insulto"]["user"].format(examples="\n".join(examples), message=user_message)
-    )
-
-    return formatted_prompt
-
-
-def clean_llm_answer(answer):
-    return remove_parenthesis(answer).replace("\"", "").replace("### RISPOSTA:", "")
-
-
-def reply_both_llm_traditional(answer):
-    return remove_parenthesis(answer).replace("\"", "").replace("### RISPOSTA:", "")
-
-
 def reply_with_ollama(update: Update, context: CallbackContext, intent):
-    if is_ollama_available():
-        print("\n\n\nGenerating LLM Message...")
-        user_message = update.message.text
-        examples = chroma_db.similarity_search(user_message, filter={"intent": intent}, k=2)
-        examples = [f"{x.metadata['nap']} ({x.page_content})" for x in examples]
-        formatted_prompt = format_llm_prompt(user_message=update.message.text, examples=examples)
-        
-        print(formatted_prompt)
-        llm_reponse = clean_llm_answer(llm.invoke(formatted_prompt))
-        print(llm_reponse)
-        
-        answer_text = f"{llm_reponse}\n\n*Risposta generata da AI (sperimentale)"
+    url = f'{os.getenv("OLLAMA_FLASK_SERVICE")}/generate_message'
 
-        context.bot.send_message(
-            chat_id=update.message.chat_id, 
-            text=answer_text,
-            reply_to_message_id=update.message.message_id, 
-            reply_markup=reply_markup
+    try:
+        print("\n\tTrying to generate LLM Message...")
+        user_message = update.message.text
+
+        response = requests.post(url, json={
+                "user_message": user_message,
+                "intent": intent
+            }
         )
+        response.raise_for_status()  # Raise an exception for 4xx or 5xx status codes
+        llm_response = response.json().get('llm_response')
+
+        if len(llm_response) > 2:
+            context.bot.send_message(
+                chat_id=update.message.chat_id, 
+                text=llm_response,
+                reply_to_message_id=update.message.message_id, 
+                reply_markup=reply_markup
+            )
+            print(f"\t\tLLM Message: {llm_response}")
+        else:
+            print("\t\tLLM message not generated, is Ollama able to find model?")
+
+    except requests.RequestException as e:
+        print("\n\nCould not generate LLM message:", e)
+        return None
 
 
 # Define Command Handlers
@@ -100,11 +86,13 @@ def start(update: Update, context: CallbackContext):
 def userText(update: Update, context: CallbackContext):
     """Function to reply to user text"""
 
+    print (f"\n\n[+] Request from: {update.message.from_user.full_name} - {update.message.from_user.name}\n\n")
+
     ai = Wit(access_token=AI_TOKEN)
     user_message = update.message.text
     resp = ai.message(user_message)
     if resp['intents']:
-        print(resp['intents'][0]['name'])
+        print(f"\tIntent: {resp['intents'][0]['name']}")
         if resp['intents'][0]['confidence'] > 0.60:
             detected_intent = resp['intents'][0]['name']
             for intent in intents["intents"]:
@@ -146,7 +134,7 @@ def userText(update: Update, context: CallbackContext):
                             random_sample = random.choice(intent['responses'])['nap']
                             context.bot.send_message(
                                 chat_id=update.message.chat_id, 
-                                text=f"{entity} {random_sample}", 
+                                text=f"{random_sample}", 
                                 reply_to_message_id=update.message.message_id, 
                                 
                             )
@@ -185,7 +173,7 @@ def userText(update: Update, context: CallbackContext):
                         random_sample = random.choice(intent['responses'])['nap']
                         context.bot.send_message(
                             chat_id=update.message.chat_id, 
-                            text=f"{entity} {random_sample}", 
+                            text=f"{random_sample}", 
                             reply_to_message_id=update.message.message_id, 
                             
                         )
@@ -196,7 +184,7 @@ def userText(update: Update, context: CallbackContext):
                         random_sample = random.choice(intent['responses'])['nap']
                         context.bot.send_message(
                             chat_id=update.message.chat_id, 
-                            text=f"{entity} {random_sample}", 
+                            text=f"{random_sample}", 
                             reply_to_message_id=update.message.message_id, 
                             
                         )
@@ -207,7 +195,7 @@ def userText(update: Update, context: CallbackContext):
                         random_sample = random.choice(intent['responses'])['nap']
                         context.bot.send_message(
                             chat_id=update.message.chat_id, 
-                            text=f"{entity} {random_sample}", 
+                            text=f"{random_sample}", 
                             reply_to_message_id=update.message.message_id, 
                             
                         )
@@ -218,7 +206,7 @@ def userText(update: Update, context: CallbackContext):
                         random_sample = random.choice(intent['responses'])['nap']
                         context.bot.send_message(
                             chat_id=update.message.chat_id, 
-                            text=f"{entity} {random_sample}", 
+                            text=f"{random_sample}", 
                             reply_to_message_id=update.message.message_id, 
                             
                         )
@@ -229,7 +217,7 @@ def userText(update: Update, context: CallbackContext):
                         random_sample = random.choice(intent['responses'])['nap']
                         context.bot.send_message(
                             chat_id=update.message.chat_id, 
-                            text=f"{entity} {random_sample}", 
+                            text=f"{random_sample}", 
                             reply_to_message_id=update.message.message_id, 
                             
                         )
@@ -240,7 +228,7 @@ def userText(update: Update, context: CallbackContext):
                         random_sample = random.choice(intent['responses'])['nap']
                         context.bot.send_message(
                             chat_id=update.message.chat_id, 
-                            text=f"{entity} {random_sample}", 
+                            text=f"{random_sample}", 
                             reply_to_message_id=update.message.message_id, 
                             
                         )
@@ -251,7 +239,7 @@ def userText(update: Update, context: CallbackContext):
                         random_sample = random.choice(intent['responses'])['nap']
                         context.bot.send_message(
                             chat_id=update.message.chat_id, 
-                            text=f"{entity} {random_sample}", 
+                            text=f"{random_sample}", 
                             reply_to_message_id=update.message.message_id, 
                             
                         )
