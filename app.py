@@ -71,6 +71,7 @@ def reply_with_ollama(update: Update, context: CallbackContext, intent):
         )
         response.raise_for_status()  # Raise an exception for 4xx or 5xx status codes
         llm_response = response.json().get('llm_response')
+        llm_samples = response.json().get('examples')
         llm_response = llm_response + "\n\n_Funzione sperimentale_"
         llm_response = llm_response.replace("!", "\!").replace(".", "\.")
 
@@ -82,6 +83,7 @@ def reply_with_ollama(update: Update, context: CallbackContext, intent):
                 reply_markup=reply_markup,
                 parse_mode=ParseMode.MARKDOWN_V2
             )
+            logger.info(f"\t\tLLM Samples: \n{llm_samples}")
             logger.info(f"\t\tLLM Message: {llm_response}")
         else:
             logger.info("\t\tLLM message not generated, is Ollama able to find model?")
