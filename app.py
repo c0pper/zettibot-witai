@@ -17,7 +17,7 @@ import re
 load_dotenv()
 # Enable logging
 logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO
+    format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO
 )
 logger = logging.getLogger(__name__)
 
@@ -61,7 +61,7 @@ def reply_with_ollama(update: Update, context: CallbackContext, intent):
     url = f'{os.getenv("OLLAMA_FLASK_SERVICE")}/generate_message'
 
     try:
-        logger.info("\n\tTrying to generate LLM Message...")
+        logger.info("\tTrying to generate LLM Message...")
         user_message = update.message.text
 
         response = requests.post(url, json={
@@ -87,7 +87,7 @@ def reply_with_ollama(update: Update, context: CallbackContext, intent):
             logger.info("\t\tLLM message not generated, is Ollama able to find model?")
 
     except requests.RequestException as e:
-        logger.info("\n\nCould not generate LLM message:", e)
+        logger.error("\tCould not generate LLM message: probably zettibot-llmservice offline.")
         return None
 
 
@@ -99,11 +99,11 @@ def start(update: Update, context: CallbackContext):
 
 def userText(update: Update, context: CallbackContext):
     """Function to reply to user text"""
-    logger.info (f"\n\n[+] Request from: {update.message.from_user.full_name} - {update.message.from_user.name}\n\n")
+    logger.info (f"[+] Request from: {update.message.from_user.full_name} - {update.message.from_user.name}")
 
     ai = Wit(access_token=AI_TOKEN)
     user_message = update.message.text
-    logger.info (f"\tMessage: {user_message}\n\n")
+    logger.info (f"\tMessage: {user_message}")
 
     resp = ai.message(user_message)
     if resp['intents']:
@@ -144,7 +144,7 @@ def userText(update: Update, context: CallbackContext):
                             reply_with_ollama(update=update, context=context, intent=intent["tag"])
 
                     elif intent["tag"] == "saluti":
-                            logger.info("no persona")
+                            logger.info(f"\tNo entity in message for intent {detected_intent}")
 
                             random_sample = random.choice(intent['responses'])['nap']
                             context.bot.send_message(
@@ -327,6 +327,8 @@ def handle_feedback(update: Update, context: CallbackContext):
     feedback_author_fullname = query.from_user.full_name
     feedback_author_handle = query.from_user.name
     bot_answer = query.message.text
+    bot_answer = bot_answer[:bot_answer.find("\n\nFunzione")]
+    processed_bot_answer = bot_answer.replace("!", "\!").replace(".", "\.")
     user_message = query.message.reply_to_message.text
     feedback = {
         "feedback_author_fullname": feedback_author_fullname,
@@ -336,6 +338,8 @@ def handle_feedback(update: Update, context: CallbackContext):
     }
 
     feedback_folder = "/feedback"
+    if not os.path.exists(feedback_folder):
+        feedback_folder = "feedback"
 
     current_date = datetime.datetime.now().strftime("%d_%m_%Y-%H_%M_%S")
 
@@ -344,18 +348,20 @@ def handle_feedback(update: Update, context: CallbackContext):
     filename_yes = os.path.join(feedback_folder, "yes", filename)
     filename_no = os.path.join(feedback_folder, "no", filename)
 
+    fn = "\n\n_Funzione sperimentale_"
+
     if query.data == 'feedback_yes':
         feedback["feedback"] = query.data
         logger.info(f"\t\tFeedback: {query.data}")
         with open(filename_yes, "w") as file:
             json.dump(feedback, file, indent=4)
-        query.edit_message_text(bot_answer + "\n\nGrazie brother quando vieni al bar mary stai pavat")
+        query.edit_message_text(processed_bot_answer + fn + "\n\n_Grazie brother quando vieni al bar mary stai pavat_", parse_mode=ParseMode.MARKDOWN_V2)
     elif query.data == 'feedback_no':
         feedback["feedback"] = query.data
         logger.info(f"\t\tFeedback: {query.data}")
         with open(filename_no, "w") as file:
             json.dump(feedback, file, indent=4)
-        query.edit_message_text(bot_answer + "\n\nAzz no ma m fa piacer")
+        query.edit_message_text(processed_bot_answer + fn + "\n\n_Azz no ma m fa piacer_", parse_mode=ParseMode.MARKDOWN_V2)
     
 
 
