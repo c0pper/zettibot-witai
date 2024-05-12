@@ -366,9 +366,6 @@ def handle_feedback(update: Update, context: CallbackContext):
 
 
 
-
-
-
 def send_audio(update: Update, context: CallbackContext) -> None:
     audio = random.choice(audios)
     update.message.reply_voice(open(audio, "rb"))
@@ -391,11 +388,11 @@ def main():
     dp.add_handler(CommandHandler("audio", send_audio))
     dp.add_handler(CommandHandler("pic", send_rand_photo))
     # registering Message Handler to reply to user messages
-    # dp.add_handler(MessageHandler(Filters.text & Filters.regex(rx.trigger_regex) & Filters.regex(rx.audio_regex) & Filters.regex(rx.inviare_regex) & ~Filters.command, send_audio))
-    dp.add_handler(MessageHandler(Filters.text & Filters.regex(rx.trigger_regex) & ~Filters.command, userText))
+    # dp.add_handler(MessageHandler(Filters.text & Filters.regex(rx.trigger_regex) & ~Filters.command, userText))
+    dp.add_handler(MessageHandler(Filters.text & (Filters.regex(rx.trigger_regex) | filter_awesome) & ~Filters.command, userText))
+    # dp.add_handler(MessageHandler(filter_awesome, userText))
     dp.add_handler(CallbackQueryHandler(handle_feedback))
-    dp.add_handler(MessageHandler(filter_awesome, userText))
-    # dp.add_handler(MessageHandler(Filters.reply, userText))
+
 
     # starting the bot
     updater.start_polling()
