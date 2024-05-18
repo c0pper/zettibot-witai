@@ -126,6 +126,8 @@ async def userText(update: Update, context: CallbackContext):
                             chat_id=update.message.chat_id, 
                             text=f"{entity} {random_sample}", 
                             reply_to_message_id=update.message.message_id, 
+                            reply_markup=reply_markup,
+                            parse_mode=ParseMode.MARKDOWN_V2 
                             
                         )
 
@@ -142,6 +144,8 @@ async def userText(update: Update, context: CallbackContext):
                                 chat_id=update.message.chat_id, 
                                 text=f"{entity} {random_sample}", 
                                 reply_to_message_id=update.message.message_id, 
+                            reply_markup=reply_markup,
+                            parse_mode=ParseMode.MARKDOWN_V2 
                                 
                             )
 
@@ -155,6 +159,8 @@ async def userText(update: Update, context: CallbackContext):
                             chat_id=update.message.chat_id, 
                             text=f"{random_sample}", 
                             reply_to_message_id=update.message.message_id, 
+                            reply_markup=reply_markup,
+                            parse_mode=ParseMode.MARKDOWN_V2 
                             
                         )
 
@@ -183,6 +189,8 @@ async def userText(update: Update, context: CallbackContext):
                             chat_id=update.message.chat_id, 
                             text=answer_text, 
                             reply_to_message_id=update.message.message_id, 
+                            reply_markup=reply_markup,
+                            parse_mode=ParseMode.MARKDOWN_V2 
                             
                         )
 
@@ -194,6 +202,8 @@ async def userText(update: Update, context: CallbackContext):
                             chat_id=update.message.chat_id, 
                             text=f"{random_sample}", 
                             reply_to_message_id=update.message.message_id, 
+                            reply_markup=reply_markup,
+                            parse_mode=ParseMode.MARKDOWN_V2 
                             
                         )
 
@@ -205,6 +215,8 @@ async def userText(update: Update, context: CallbackContext):
                             chat_id=update.message.chat_id, 
                             text=f"{random_sample}", 
                             reply_to_message_id=update.message.message_id, 
+                            reply_markup=reply_markup,
+                            parse_mode=ParseMode.MARKDOWN_V2 
                             
                         )
 
@@ -216,6 +228,8 @@ async def userText(update: Update, context: CallbackContext):
                             chat_id=update.message.chat_id, 
                             text=f"{random_sample}", 
                             reply_to_message_id=update.message.message_id, 
+                            reply_markup=reply_markup,
+                            parse_mode=ParseMode.MARKDOWN_V2 
                             
                         )
 
@@ -227,6 +241,8 @@ async def userText(update: Update, context: CallbackContext):
                             chat_id=update.message.chat_id, 
                             text=f"{random_sample}", 
                             reply_to_message_id=update.message.message_id, 
+                            reply_markup=reply_markup,
+                            parse_mode=ParseMode.MARKDOWN_V2 
                             
                         )
 
@@ -238,6 +254,8 @@ async def userText(update: Update, context: CallbackContext):
                             chat_id=update.message.chat_id, 
                             text=f"{random_sample}", 
                             reply_to_message_id=update.message.message_id, 
+                            reply_markup=reply_markup,
+                            parse_mode=ParseMode.MARKDOWN_V2 
                             
                         )
 
@@ -249,6 +267,8 @@ async def userText(update: Update, context: CallbackContext):
                             chat_id=update.message.chat_id, 
                             text=f"{random_sample}", 
                             reply_to_message_id=update.message.message_id, 
+                            reply_markup=reply_markup,
+                            parse_mode=ParseMode.MARKDOWN_V2 
                             
                         )
 
@@ -260,6 +280,8 @@ async def userText(update: Update, context: CallbackContext):
                             chat_id=update.message.chat_id, 
                             text=f"{random_sample}", 
                             reply_to_message_id=update.message.message_id, 
+                            reply_markup=reply_markup,
+                            parse_mode=ParseMode.MARKDOWN_V2 
                             
                         )
 
@@ -280,6 +302,8 @@ async def userText(update: Update, context: CallbackContext):
                             chat_id=update.message.chat_id, 
                             text=answer_text, 
                             reply_to_message_id=update.message.message_id, 
+                            reply_markup=reply_markup,
+                            parse_mode=ParseMode.MARKDOWN_V2 
                             
                         )
                         
@@ -293,6 +317,8 @@ async def userText(update: Update, context: CallbackContext):
                             chat_id=update.message.chat_id, 
                             text=random_sample, 
                             reply_to_message_id=update.message.message_id, 
+                            reply_markup=reply_markup,
+                            parse_mode=ParseMode.MARKDOWN_V2 
                             
                         )
                         
@@ -305,6 +331,8 @@ async def userText(update: Update, context: CallbackContext):
                 chat_id=update.message.chat_id, 
                 text=random_sample, 
                 reply_to_message_id=update.message.message_id, 
+                reply_markup=reply_markup,
+                parse_mode=ParseMode.MARKDOWN_V2 
                 
             )
             
@@ -318,6 +346,8 @@ async def userText(update: Update, context: CallbackContext):
             chat_id=update.message.chat_id, 
             text=random_sample, 
             reply_to_message_id=update.message.message_id, 
+            reply_markup=reply_markup,
+            parse_mode=ParseMode.MARKDOWN_V2 
             
         )
         
@@ -333,7 +363,8 @@ async def handle_feedback(update: Update, context: CallbackContext):
     feedback_author_fullname = query.from_user.full_name
     feedback_author_handle = query.from_user.name
     bot_answer = query.message.text
-    bot_answer = bot_answer[:bot_answer.find("\n\nFunzione")]
+    funzione_idx = bot_answer.find("\n\nFunzione")
+    bot_answer = bot_answer[:bot_answer.find("\n\nFunzione")] if funzione_idx > 0 else bot_answer
     processed_bot_answer = bot_answer.replace("!", "\!").replace(".", "\.")
     user_message = query.message.reply_to_message.text
     feedback = {
@@ -354,7 +385,7 @@ async def handle_feedback(update: Update, context: CallbackContext):
     filename_yes = os.path.join(feedback_folder, "yes", filename)
     filename_no = os.path.join(feedback_folder, "no", filename)
 
-    fn = "\n\n_Funzione sperimentale_"
+    fn = "" #"\n\n_Funzione sperimentale_"
 
     if query.data == 'feedback_yes':
         feedback["feedback"] = query.data
