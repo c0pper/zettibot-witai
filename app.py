@@ -7,8 +7,9 @@ import logging
 
 import requests
 import rx
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update, ParseMode
-from telegram.ext import Updater, Dispatcher, CommandHandler, MessageHandler, Filters, CallbackContext, CallbackQueryHandler, Defaults
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
+from telegram.constants import ParseMode
+from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, CallbackContext, CallbackQueryHandler, Defaults
 from telegram.ext.filters import MessageFilter
 from wit import Wit
 from dotenv import load_dotenv
@@ -57,7 +58,7 @@ with open('intents.json', 'r') as f:
     intents = json.load(f)
 
 
-def reply_with_ollama(update: Update, context: CallbackContext, intent):
+async def reply_with_ollama(update: Update, context: CallbackContext, intent):
     url = f'{os.getenv("OLLAMA_FLASK_SERVICE")}/generate_message'
 
     try:
@@ -76,7 +77,7 @@ def reply_with_ollama(update: Update, context: CallbackContext, intent):
         llm_response = llm_response.replace("!", "\!").replace(".", "\.")
 
         if len(llm_response) > 2:
-            context.bot.send_message(
+            await context.bot.send_message(
                 chat_id=update.message.chat_id, 
                 text=llm_response,
                 reply_to_message_id=update.message.message_id, 
@@ -94,12 +95,12 @@ def reply_with_ollama(update: Update, context: CallbackContext, intent):
 
 
 # Define Command Handlers
-def start(update: Update, context: CallbackContext):
+async def start(update: Update, context: CallbackContext):
     """Handler for /start command"""
-    update.message.reply_text('Mo accumminciamm nata vot mo', parse_mode=ParseMode())
+    await update.message.reply_text('Mo accumminciamm nata vot mo', parse_mode=ParseMode())
 
 
-def userText(update: Update, context: CallbackContext):
+async def userText(update: Update, context: CallbackContext):
     """Function to reply to user text"""
     logger.info (f"[+] Request from: {update.message.from_user.full_name} - {update.message.from_user.name}")
 
@@ -112,6 +113,7 @@ def userText(update: Update, context: CallbackContext):
         logger.info(f"\tIntent: {resp['intents'][0]['name']}")
         if resp['intents'][0]['confidence'] > 0.60:
             detected_intent = resp['intents'][0]['name']
+            random_sample = ""
             for intent in intents["intents"]:
                 if detected_intent == intent["tag"]:
 
@@ -120,14 +122,14 @@ def userText(update: Update, context: CallbackContext):
                         logger.info(entity)
 
                         random_sample = random.choice(intent['responses'])['nap']
-                        context.bot.send_message(
+                        await context.bot.send_message(
                             chat_id=update.message.chat_id, 
                             text=f"{entity} {random_sample}", 
                             reply_to_message_id=update.message.message_id, 
                             
                         )
 
-                        reply_with_ollama(update=update, context=context, intent=intent["tag"])
+                        await reply_with_ollama(update=update, context=context, intent=intent["tag"])
 
 
                     elif intent["tag"] == "saluti_persona":
@@ -136,35 +138,35 @@ def userText(update: Update, context: CallbackContext):
                             entity = resp["entities"]["person:object"][0]["body"]
 
                             random_sample = random.choice(intent['responses'])['nap']
-                            context.bot.send_message(
+                            await context.bot.send_message(
                                 chat_id=update.message.chat_id, 
                                 text=f"{entity} {random_sample}", 
                                 reply_to_message_id=update.message.message_id, 
                                 
                             )
 
-                            reply_with_ollama(update=update, context=context, intent=intent["tag"])
+                            await reply_with_ollama(update=update, context=context, intent=intent["tag"])
 
                     elif intent["tag"] == "saluti":
-                            logger.info(f"\tNo entity in message for intent {detected_intent}")
+                        logger.info(f"\tNo entity in message for intent {detected_intent}")
 
-                            random_sample = random.choice(intent['responses'])['nap']
-                            context.bot.send_message(
-                                chat_id=update.message.chat_id, 
-                                text=f"{random_sample}", 
-                                reply_to_message_id=update.message.message_id, 
-                                
-                            )
+                        random_sample = random.choice(intent['responses'])['nap']
+                        await context.bot.send_message(
+                            chat_id=update.message.chat_id, 
+                            text=f"{random_sample}", 
+                            reply_to_message_id=update.message.message_id, 
+                            
+                        )
 
-                            reply_with_ollama(update=update, context=context, intent=intent["tag"])
+                        await reply_with_ollama(update=update, context=context, intent=intent["tag"])
 
                     elif intent["tag"] == "audio":
                         audio = random.choice(audios)
-                        update.message.reply_voice(open(audio, "rb"))
+                        await update.message.reply_voice(open(audio, "rb"))
 
                     elif intent["tag"] == "foto":
                         photo = random.choice(photos) 
-                        update.message.reply_photo(open(photo, "rb"), random.choice(qlines))
+                        await update.message.reply_photo(open(photo, "rb"), random.choice(qlines))
 
                     elif intent["tag"] == "parere":
                         random_sample = random.choice(intent['responses'])['nap']
@@ -177,91 +179,91 @@ def userText(update: Update, context: CallbackContext):
                             logger.info("no persona")
                             answer_text = f"{random_sample}"
                         
-                        context.bot.send_message(
+                        await context.bot.send_message(
                             chat_id=update.message.chat_id, 
                             text=answer_text, 
                             reply_to_message_id=update.message.message_id, 
                             
                         )
 
-                        reply_with_ollama(update=update, context=context, intent=intent["tag"])
+                        await reply_with_ollama(update=update, context=context, intent=intent["tag"])
 
                     elif intent["tag"] == "perche":
                         random_sample = random.choice(intent['responses'])['nap']
-                        context.bot.send_message(
+                        await context.bot.send_message(
                             chat_id=update.message.chat_id, 
                             text=f"{random_sample}", 
                             reply_to_message_id=update.message.message_id, 
                             
                         )
 
-                        reply_with_ollama(update=update, context=context, intent=intent["tag"])
+                        await reply_with_ollama(update=update, context=context, intent=intent["tag"])
 
                     elif intent["tag"] == "incazzo":
                         random_sample = random.choice(intent['responses'])['nap']
-                        context.bot.send_message(
+                        await context.bot.send_message(
                             chat_id=update.message.chat_id, 
                             text=f"{random_sample}", 
                             reply_to_message_id=update.message.message_id, 
                             
                         )
 
-                        reply_with_ollama(update=update, context=context, intent=intent["tag"])
+                        await reply_with_ollama(update=update, context=context, intent=intent["tag"])
 
                     elif intent["tag"] == "ringraziamento":
                         random_sample = random.choice(intent['responses'])['nap']
-                        context.bot.send_message(
+                        await context.bot.send_message(
                             chat_id=update.message.chat_id, 
                             text=f"{random_sample}", 
                             reply_to_message_id=update.message.message_id, 
                             
                         )
 
-                        reply_with_ollama(update=update, context=context, intent=intent["tag"])
+                        await reply_with_ollama(update=update, context=context, intent=intent["tag"])
 
                     elif intent["tag"] == "accordo":
                         random_sample = random.choice(intent['responses'])['nap']
-                        context.bot.send_message(
+                        await context.bot.send_message(
                             chat_id=update.message.chat_id, 
                             text=f"{random_sample}", 
                             reply_to_message_id=update.message.message_id, 
                             
                         )
 
-                        reply_with_ollama(update=update, context=context, intent=intent["tag"])
+                        await reply_with_ollama(update=update, context=context, intent=intent["tag"])
 
                     elif intent["tag"] == "neutro":
                         random_sample = random.choice(intent['responses'])['nap']
-                        context.bot.send_message(
+                        await context.bot.send_message(
                             chat_id=update.message.chat_id, 
                             text=f"{random_sample}", 
                             reply_to_message_id=update.message.message_id, 
                             
                         )
 
-                        reply_with_ollama(update=update, context=context, intent=intent["tag"])
+                        await reply_with_ollama(update=update, context=context, intent=intent["tag"])
 
                     elif intent["tag"] == "social":
                         random_sample = random.choice(intent['responses'])['nap']
-                        context.bot.send_message(
+                        await context.bot.send_message(
                             chat_id=update.message.chat_id, 
                             text=f"{random_sample}", 
                             reply_to_message_id=update.message.message_id, 
                             
                         )
 
-                        reply_with_ollama(update=update, context=context, intent=intent["tag"])
+                        await reply_with_ollama(update=update, context=context, intent=intent["tag"])
 
                     elif intent["tag"] == "femmine":
                         random_sample = random.choice(intent['responses'])['nap']
-                        context.bot.send_message(
+                        await context.bot.send_message(
                             chat_id=update.message.chat_id, 
                             text=f"{random_sample}", 
                             reply_to_message_id=update.message.message_id, 
                             
                         )
 
-                        reply_with_ollama(update=update, context=context, intent=intent["tag"])
+                        await reply_with_ollama(update=update, context=context, intent=intent["tag"])
 
                     elif intent["tag"] == "auguri":
                         random_sample = random.choice(intent['responses'])['nap']
@@ -274,45 +276,45 @@ def userText(update: Update, context: CallbackContext):
                             logger.info("no persona")
                             answer_text = f"{random_sample}"
 
-                        context.bot.send_message(
+                        await context.bot.send_message(
                             chat_id=update.message.chat_id, 
                             text=answer_text, 
                             reply_to_message_id=update.message.message_id, 
                             
                         )
                         
-                        reply_with_ollama(update=update, context=context, intent=intent["tag"])
+                        await reply_with_ollama(update=update, context=context, intent=intent["tag"])
 
                     else:
                         logger.info(f"using found tag {intent['tag']}")
 
                         random_sample = random.choice(intent['responses'])['nap']
-                        context.bot.send_message(
+                        await context.bot.send_message(
                             chat_id=update.message.chat_id, 
                             text=random_sample, 
                             reply_to_message_id=update.message.message_id, 
                             
                         )
                         
-                        reply_with_ollama(update=update, context=context, intent=intent["tag"])
+                        await reply_with_ollama(update=update, context=context, intent=intent["tag"])
 
         else:
             logger.info("not enough confidence")
             random_sample = random.choice(intent['responses'])['nap']
-            context.bot.send_message(
+            await context.bot.send_message(
                 chat_id=update.message.chat_id, 
                 text=random_sample, 
                 reply_to_message_id=update.message.message_id, 
                 
             )
             
-            reply_with_ollama(update=update, context=context, intent=intent["tag"])
-            update.message.reply_text(f"{random.choice(qlines)}")
+            await reply_with_ollama(update=update, context=context, intent=intent["tag"])
+            await update.message.reply_text(f"{random.choice(qlines)}")
 
     else:
         logger.info("no response from witai")
         random_sample = random.choice(qlines)
-        context.bot.send_message(
+        await context.bot.send_message(
             chat_id=update.message.chat_id, 
             text=random_sample, 
             reply_to_message_id=update.message.message_id, 
@@ -321,10 +323,12 @@ def userText(update: Update, context: CallbackContext):
         
         all_intents = [i["tag"] for i in intents["intents"] if i["tag"] not in ["parere", "insulto", "saluti_persona", "auguri"]]
         random_intent = random.choice(all_intents)
-        reply_with_ollama(update=update, context=context, intent=random_intent)
+        await reply_with_ollama(update=update, context=context, intent=random_intent)
+
+    logger.info(f"\tPredefined answer: {random_sample}")
 
 
-def handle_feedback(update: Update, context: CallbackContext):
+async def handle_feedback(update: Update, context: CallbackContext):
     query = update.callback_query
     feedback_author_fullname = query.from_user.full_name
     feedback_author_handle = query.from_user.name
@@ -357,47 +361,58 @@ def handle_feedback(update: Update, context: CallbackContext):
         logger.info(f"\t\tFeedback: {query.data}")
         with open(filename_yes, "w", encoding="utf8") as file:
             json.dump(feedback, file, indent=4)
-        query.edit_message_text(processed_bot_answer + fn + "\n\n_Grazie brother quando vieni al bar mary stai pavat_", parse_mode=ParseMode.MARKDOWN_V2)
+        await query.edit_message_text(processed_bot_answer + fn + "\n\n_Grazie brother quando vieni al bar mary stai pavat_", parse_mode=ParseMode.MARKDOWN_V2)
     elif query.data == 'feedback_no':
         feedback["feedback"] = query.data
         logger.info(f"\t\tFeedback: {query.data}")
         with open(filename_no, "w", encoding="utf8") as file:
             json.dump(feedback, file, indent=4)
-        query.edit_message_text(processed_bot_answer + fn + "\n\n_Azz no ma m fa piacer_", parse_mode=ParseMode.MARKDOWN_V2)
+        await query.edit_message_text(processed_bot_answer + fn + "\n\n_Azz no ma m fa piacer_", parse_mode=ParseMode.MARKDOWN_V2)
     
 
 
 
-def send_audio(update: Update, context: CallbackContext) -> None:
+async def send_audio(update: Update, context: CallbackContext) -> None:
     audio = random.choice(audios)
-    update.message.reply_voice(open(audio, "rb"))
+    await update.message.reply_voice(open(audio, "rb"))
 
 
-def send_rand_photo(update: Update, context: CallbackContext) -> None:
+async def send_rand_photo(update: Update, context: CallbackContext) -> None:
     photo = random.choice(photos) #open("pics/xp.jpg", "rb")
-    update.message.reply_photo(open(photo, "rb"), random.choice(qlines))
+    await update.message.reply_photo(open(photo, "rb"), random.choice(qlines))
 
 
 def main():
     """starting bot"""
-    updater = Updater(TELE_TOKEN, use_context=True)
+    app = ApplicationBuilder().token(TELE_TOKEN).build()
 
-    # getting the dispatchers to register handlers
-    dp = updater.dispatcher
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("audio", send_audio))
+    app.add_handler(CommandHandler("pic", send_rand_photo))
+    app.add_handler(MessageHandler(filters.TEXT & (filters.Regex(rx.trigger_regex) | filter_awesome) & ~filters.COMMAND, userText))
+    app.add_handler(CallbackQueryHandler(handle_feedback))
 
-    # registering commands
-    dp.add_handler(CommandHandler("start", start))
-    dp.add_handler(CommandHandler("audio", send_audio))
-    dp.add_handler(CommandHandler("pic", send_rand_photo))
-    # registering Message Handler to reply to user messages
-    # dp.add_handler(MessageHandler(Filters.text & Filters.regex(rx.trigger_regex) & ~Filters.command, userText))
-    dp.add_handler(MessageHandler(Filters.text & (Filters.regex(rx.trigger_regex) | filter_awesome) & ~Filters.command, userText))
-    # dp.add_handler(MessageHandler(filter_awesome, userText))
-    dp.add_handler(CallbackQueryHandler(handle_feedback))
+    app.run_polling()
 
 
-    # starting the bot
-    updater.start_polling()
+    # updater = Updater(TELE_TOKEN, use_context=True)
+
+    # # getting the dispatchers to register handlers
+    # dp = updater.dispatcher
+
+    # # registering commands
+    # dp.add_handler(CommandHandler("start", start))
+    # dp.add_handler(CommandHandler("audio", send_audio))
+    # dp.add_handler(CommandHandler("pic", send_rand_photo))
+    # # registering Message Handler to reply to user messages
+    # # dp.add_handler(MessageHandler(Filters.text & Filters.regex(rx.trigger_regex) & ~Filters.command, userText))
+    # dp.add_handler(MessageHandler(Filters.text & (Filters.regex(rx.trigger_regex) | filter_awesome) & ~Filters.command, userText))
+    # # dp.add_handler(MessageHandler(filter_awesome, userText))
+    # dp.add_handler(CallbackQueryHandler(handle_feedback))
+
+
+    # # starting the bot
+    # updater.start_polling()
 
 
 if __name__ == '__main__':
