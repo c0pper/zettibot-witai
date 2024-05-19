@@ -116,6 +116,7 @@ async def userText(update: Update, context: CallbackContext):
             random_sample = ""
             for intent in intents["intents"]:
                 if detected_intent == intent["tag"]:
+                    context.user_data["intent"] = intent["tag"]
 
                     if intent["tag"] == "insulto":
                         entity = resp["entities"]["person:object"][0]["body"]
@@ -180,6 +181,7 @@ async def userText(update: Update, context: CallbackContext):
                             entity = resp["entities"]["person:object"][0]["body"]
                             logger.info(entity)
                             answer_text = f"{entity} {random_sample}"
+                            
 
                         else:
                             logger.info("no persona")
@@ -297,13 +299,13 @@ async def userText(update: Update, context: CallbackContext):
                         else:
                             logger.info("no persona")
                             answer_text = f"{random_sample}"
-
+                            
                         await context.bot.send_message(
                             chat_id=update.message.chat_id, 
                             text=answer_text, 
                             reply_to_message_id=update.message.message_id, 
                             reply_markup=reply_markup,
-                            parse_mode=ParseMode.MARKDOWN_V2 
+                            parse_mode=ParseMode.MARKDOWN_V2
                             
                         )
                         
@@ -355,6 +357,7 @@ async def userText(update: Update, context: CallbackContext):
         random_intent = random.choice(all_intents)
         await reply_with_ollama(update=update, context=context, intent=random_intent)
 
+    context.user_data["entities"] = resp.get("entities")
     logger.info(f"\tPredefined answer: {random_sample}")
 
 
@@ -371,6 +374,7 @@ async def handle_feedback(update: Update, context: CallbackContext):
         "feedback_author_fullname": feedback_author_fullname,
         "feedback_author_handle": feedback_author_handle,
         "bot_answer": bot_answer,
+        "intent": context.user_data["intent"],
         "user_message": user_message
     }
 
@@ -392,6 +396,34 @@ async def handle_feedback(update: Update, context: CallbackContext):
         logger.info(f"\t\tFeedback: {query.data}")
         with open(filename_yes, "w", encoding="utf8") as file:
             json.dump(feedback, file, indent=4)
+        
+        if context.user_data["entities"]:
+            ent_entity = context.user_data['entities']['person:object'][0]["name"] + ":" + context.user_data['entities']['person:object'][0]["role"]
+            ent_start = context.user_data['entities']['person:object'][0]["start"]
+            ent_end = context.user_data['entities']['person:object'][0]["end"]
+            ent_body = context.user_data['entities']['person:object'][0]["body"]
+            entities = [{
+                "entity": ent_entity,
+                "start": ent_start,
+                "end": ent_end,
+                "body": ent_body,
+                "entities": []
+            }]
+        else:
+            entities = []
+
+        body = [{
+            "text": user_message,
+            "intent": context.user_data["intent"],
+            "entities": entities,
+            "traits": []
+        }]
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {os.getenv('WITAI_SERVER_TOKEN')}"
+        }
+        train_url = "https://api.wit.ai/utterances"
+        response = requests.post(train_url, headers=headers, data=json.dumps(body))
         await query.edit_message_text(processed_bot_answer + fn + "\n\n_Grazie brother quando vieni al bar mary stai pavat_", parse_mode=ParseMode.MARKDOWN_V2)
     elif query.data == 'feedback_no':
         feedback["feedback"] = query.data
