@@ -48,10 +48,17 @@ audios = list(Path("audio").glob("*"))
 quotefile = 'quotes.txt'
 audiofile = 'audio.txt'
 
-keyboard = [
-    [InlineKeyboardButton("👍 Spaccat", callback_data='feedback_yes'), InlineKeyboardButton("👎 Fo cess", callback_data='feedback_no')]
-]
-reply_markup = InlineKeyboardMarkup(keyboard)
+def build_feedback_reply_markup(intent):
+    cb_data_yes = json.dumps({'fb': 'feedback_yes', 'intent': f'{intent}'})
+    cb_data_no = json.dumps({"fb": "feedback_no", "intent": f"{intent}"})
+    keyboard = [
+        [
+            InlineKeyboardButton("👍 Spaccat", callback_data=cb_data_yes),
+            InlineKeyboardButton("👎 Fo cess", callback_data=cb_data_no)
+        ]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    return reply_markup
 
 with open(quotefile) as q:
     qlines = q.readlines()
@@ -78,12 +85,13 @@ async def reply_with_ollama(update: Update, context: CallbackContext, intent):
         llm_response = llm_response + "\n\n_Funzione sperimentale_"
         llm_response = llm_response.replace("!", "\!").replace(".", "\.")
 
+        markup_kb = build_feedback_reply_markup(intent)
         if len(llm_response) > 2:
             await context.bot.send_message(
                 chat_id=update.message.chat_id, 
                 text=llm_response,
                 reply_to_message_id=update.message.message_id, 
-                reply_markup=reply_markup,
+                reply_markup=markup_kb,
                 parse_mode=ParseMode.MARKDOWN_V2
             )
             logger.info(f"\t\tLLM Samples: \n{llm_samples}")
@@ -114,10 +122,12 @@ async def userText(update: Update, context: CallbackContext):
     if resp['intents']:
         logger.info(f"\tIntent: {resp['intents'][0]['name']}")
         detected_intent = resp['intents'][0]['name']
+        markup_kb = build_feedback_reply_markup(detected_intent)
         if resp['intents'][0]['confidence'] > 0.50:
             random_sample = ""
             for intent in intents["intents"]:
                 if detected_intent == intent["tag"]:
+                    
                     context.user_data["intent"] = intent["tag"]
 
                     if intent["tag"] == "insulto":
@@ -129,12 +139,12 @@ async def userText(update: Update, context: CallbackContext):
                             chat_id=update.message.chat_id, 
                             text=f"{entity} {random_sample}", 
                             reply_to_message_id=update.message.message_id, 
-                            reply_markup=reply_markup,
+                            reply_markup=markup_kb,
                             parse_mode=ParseMode.MARKDOWN_V2 
                             
                         )
 
-                        await reply_with_ollama(update=update, context=context, intent=intent["tag"])
+                        # await reply_with_ollama(update=update, context=context, intent=intent["tag"])
 
 
                     elif intent["tag"] == "saluti_persona":
@@ -147,12 +157,12 @@ async def userText(update: Update, context: CallbackContext):
                                 chat_id=update.message.chat_id, 
                                 text=f"{entity} {random_sample}", 
                                 reply_to_message_id=update.message.message_id, 
-                            reply_markup=reply_markup,
+                            reply_markup=markup_kb,
                             parse_mode=ParseMode.MARKDOWN_V2 
                                 
                             )
 
-                            await reply_with_ollama(update=update, context=context, intent=intent["tag"])
+                            # await reply_with_ollama(update=update, context=context, intent=intent["tag"])
 
                     elif intent["tag"] == "saluti":
                         logger.info(f"\tNo entity in message for intent {detected_intent}")
@@ -162,12 +172,12 @@ async def userText(update: Update, context: CallbackContext):
                             chat_id=update.message.chat_id, 
                             text=f"{random_sample}", 
                             reply_to_message_id=update.message.message_id, 
-                            reply_markup=reply_markup,
+                            reply_markup=markup_kb,
                             parse_mode=ParseMode.MARKDOWN_V2 
                             
                         )
 
-                        await reply_with_ollama(update=update, context=context, intent=intent["tag"])
+                        # await reply_with_ollama(update=update, context=context, intent=intent["tag"])
 
                     elif intent["tag"] == "audio":
                         audio = random.choice(audios)
@@ -193,12 +203,12 @@ async def userText(update: Update, context: CallbackContext):
                             chat_id=update.message.chat_id, 
                             text=answer_text, 
                             reply_to_message_id=update.message.message_id, 
-                            reply_markup=reply_markup,
+                            reply_markup=markup_kb,
                             parse_mode=ParseMode.MARKDOWN_V2 
                             
                         )
 
-                        await reply_with_ollama(update=update, context=context, intent=intent["tag"])
+                        # await reply_with_ollama(update=update, context=context, intent=intent["tag"])
 
                     elif intent["tag"] == "perche":
                         random_sample = random.choice(intent['responses'])['nap']
@@ -206,12 +216,12 @@ async def userText(update: Update, context: CallbackContext):
                             chat_id=update.message.chat_id, 
                             text=f"{random_sample}", 
                             reply_to_message_id=update.message.message_id, 
-                            reply_markup=reply_markup,
+                            reply_markup=markup_kb,
                             parse_mode=ParseMode.MARKDOWN_V2 
                             
                         )
 
-                        await reply_with_ollama(update=update, context=context, intent=intent["tag"])
+                        # await reply_with_ollama(update=update, context=context, intent=intent["tag"])
 
                     elif intent["tag"] == "incazzo":
                         random_sample = random.choice(intent['responses'])['nap']
@@ -219,12 +229,12 @@ async def userText(update: Update, context: CallbackContext):
                             chat_id=update.message.chat_id, 
                             text=f"{random_sample}", 
                             reply_to_message_id=update.message.message_id, 
-                            reply_markup=reply_markup,
+                            reply_markup=markup_kb,
                             parse_mode=ParseMode.MARKDOWN_V2 
                             
                         )
 
-                        await reply_with_ollama(update=update, context=context, intent=intent["tag"])
+                        # await reply_with_ollama(update=update, context=context, intent=intent["tag"])
 
                     elif intent["tag"] == "ringraziamento":
                         random_sample = random.choice(intent['responses'])['nap']
@@ -232,12 +242,12 @@ async def userText(update: Update, context: CallbackContext):
                             chat_id=update.message.chat_id, 
                             text=f"{random_sample}", 
                             reply_to_message_id=update.message.message_id, 
-                            reply_markup=reply_markup,
+                            reply_markup=markup_kb,
                             parse_mode=ParseMode.MARKDOWN_V2 
                             
                         )
 
-                        await reply_with_ollama(update=update, context=context, intent=intent["tag"])
+                        # await reply_with_ollama(update=update, context=context, intent=intent["tag"])
 
                     elif intent["tag"] == "accordo":
                         random_sample = random.choice(intent['responses'])['nap']
@@ -245,12 +255,12 @@ async def userText(update: Update, context: CallbackContext):
                             chat_id=update.message.chat_id, 
                             text=f"{random_sample}", 
                             reply_to_message_id=update.message.message_id, 
-                            reply_markup=reply_markup,
+                            reply_markup=markup_kb,
                             parse_mode=ParseMode.MARKDOWN_V2 
                             
                         )
 
-                        await reply_with_ollama(update=update, context=context, intent=intent["tag"])
+                        # await reply_with_ollama(update=update, context=context, intent=intent["tag"])
 
                     elif intent["tag"] == "neutro":
                         random_sample = random.choice(intent['responses'])['nap']
@@ -258,12 +268,12 @@ async def userText(update: Update, context: CallbackContext):
                             chat_id=update.message.chat_id, 
                             text=f"{random_sample}", 
                             reply_to_message_id=update.message.message_id, 
-                            reply_markup=reply_markup,
+                            reply_markup=markup_kb,
                             parse_mode=ParseMode.MARKDOWN_V2 
                             
                         )
 
-                        await reply_with_ollama(update=update, context=context, intent=intent["tag"])
+                        # await reply_with_ollama(update=update, context=context, intent=intent["tag"])
 
                     elif intent["tag"] == "social":
                         random_sample = random.choice(intent['responses'])['nap']
@@ -271,12 +281,12 @@ async def userText(update: Update, context: CallbackContext):
                             chat_id=update.message.chat_id, 
                             text=f"{random_sample}", 
                             reply_to_message_id=update.message.message_id, 
-                            reply_markup=reply_markup,
+                            reply_markup=markup_kb,
                             parse_mode=ParseMode.MARKDOWN_V2 
                             
                         )
 
-                        await reply_with_ollama(update=update, context=context, intent=intent["tag"])
+                        # await reply_with_ollama(update=update, context=context, intent=intent["tag"])
 
                     elif intent["tag"] == "femmine":
                         random_sample = random.choice(intent['responses'])['nap']
@@ -284,12 +294,12 @@ async def userText(update: Update, context: CallbackContext):
                             chat_id=update.message.chat_id, 
                             text=f"{random_sample}", 
                             reply_to_message_id=update.message.message_id, 
-                            reply_markup=reply_markup,
+                            reply_markup=markup_kb,
                             parse_mode=ParseMode.MARKDOWN_V2 
                             
                         )
 
-                        await reply_with_ollama(update=update, context=context, intent=intent["tag"])
+                        # await reply_with_ollama(update=update, context=context, intent=intent["tag"])
 
                     elif intent["tag"] == "auguri":
                         random_sample = random.choice(intent['responses'])['nap']
@@ -306,12 +316,12 @@ async def userText(update: Update, context: CallbackContext):
                             chat_id=update.message.chat_id, 
                             text=answer_text, 
                             reply_to_message_id=update.message.message_id, 
-                            reply_markup=reply_markup,
+                            reply_markup=markup_kb,
                             parse_mode=ParseMode.MARKDOWN_V2
                             
                         )
                         
-                        await reply_with_ollama(update=update, context=context, intent=intent["tag"])
+                        # await reply_with_ollama(update=update, context=context, intent=intent["tag"])
 
                     else:
                         logger.info(f"using found tag {intent['tag']}")
@@ -321,12 +331,12 @@ async def userText(update: Update, context: CallbackContext):
                             chat_id=update.message.chat_id, 
                             text=random_sample, 
                             reply_to_message_id=update.message.message_id, 
-                            reply_markup=reply_markup,
+                            reply_markup=markup_kb,
                             parse_mode=ParseMode.MARKDOWN_V2 
                             
                         )
                         
-                        await reply_with_ollama(update=update, context=context, intent=intent["tag"])
+                        # await reply_with_ollama(update=update, context=context, intent=intent["tag"])
 
         else:
             logger.info("not enough confidence")
@@ -336,27 +346,28 @@ async def userText(update: Update, context: CallbackContext):
                 chat_id=update.message.chat_id, 
                 text=random_sample, 
                 reply_to_message_id=update.message.message_id, 
-                reply_markup=reply_markup,
+                reply_markup=markup_kb,
                 parse_mode=ParseMode.MARKDOWN_V2 
                 
             )
             
-            await reply_with_ollama(update=update, context=context, intent=intent["tag"])
+            # await reply_with_ollama(update=update, context=context, intent=intent["tag"])
 
     else:
         logger.info("no response from witai")
+        all_intents = [i["tag"] for i in intents["intents"] if i["tag"] not in ["parere", "insulto", "saluti_persona", "auguri"]]
+        random_intent = random.choice(all_intents)
         random_sample = random.choice(qlines)
+        markup_kb = build_feedback_reply_markup(random_intent)
         await context.bot.send_message(
             chat_id=update.message.chat_id, 
             text=random_sample, 
             reply_to_message_id=update.message.message_id, 
-            reply_markup=reply_markup,
+            reply_markup=markup_kb,
             parse_mode=ParseMode.MARKDOWN_V2 
             
         )
         
-        all_intents = [i["tag"] for i in intents["intents"] if i["tag"] not in ["parere", "insulto", "saluti_persona", "auguri"]]
-        random_intent = random.choice(all_intents)
         await reply_with_ollama(update=update, context=context, intent=random_intent)
 
     context.user_data["entities"] = resp.get("entities")
@@ -372,12 +383,14 @@ async def handle_feedback(update: Update, context: CallbackContext):
     bot_answer = bot_answer[:bot_answer.find("\n\nFunzione")] if funzione_idx > 0 else bot_answer
     processed_bot_answer = bot_answer.replace("!", "\!").replace(".", "\.")
     user_message = query.message.reply_to_message.text
+    query_feedback = json.loads(query.data)
     feedback = {
         "feedback_author_fullname": feedback_author_fullname,
         "feedback_author_handle": feedback_author_handle,
         "bot_answer": bot_answer,
-        "intent": context.user_data["intent"],
-        "user_message": user_message
+        "intent": query_feedback["intent"],
+        "user_message": user_message,
+        "eval": query_feedback["fb"]
     }
 
     feedback_folder = "/feedback"
@@ -387,30 +400,32 @@ async def handle_feedback(update: Update, context: CallbackContext):
     current_date = datetime.datetime.now().strftime("%d_%m_%Y-%H_%M_%S")
 
     processed_handle = re.sub(r'\W+', '', query.from_user.name)
-    filename = f"{processed_handle}_{current_date}_{query.data}.json"
+    filename = f"{processed_handle}_{current_date}_{query_feedback['fb']}.json"
     filename_yes = os.path.join(feedback_folder, "yes", filename)
     filename_no = os.path.join(feedback_folder, "no", filename)
 
     fn = "" #"\n\n_Funzione sperimentale_"
 
-    if query.data == 'feedback_yes':
-        feedback["feedback"] = query.data
-        logger.info(f"\t\tFeedback: {query.data}")
+    if query_feedback["fb"] == 'feedback_yes':
+        logger.info(f"\t\tFeedback: {query_feedback['fb']}")
         with open(filename_yes, "w", encoding="utf8") as file:
             json.dump(feedback, file, indent=4)
         
         if context.user_data["entities"]:
-            ent_entity = context.user_data['entities']['person:object'][0]["name"] + ":" + context.user_data['entities']['person:object'][0]["role"]
-            ent_start = context.user_data['entities']['person:object'][0]["start"]
-            ent_end = context.user_data['entities']['person:object'][0]["end"]
-            ent_body = context.user_data['entities']['person:object'][0]["body"]
-            entities = [{
-                "entity": ent_entity,
-                "start": ent_start,
-                "end": ent_end,
-                "body": ent_body,
-                "entities": []
-            }]
+            if "person:object" in list(context.user_data["entities"].keys()):
+                ent_entity = context.user_data['entities']['person:object'][0]["name"] + ":" + context.user_data['entities']['person:object'][0]["role"]
+                ent_start = context.user_data['entities']['person:object'][0]["start"]
+                ent_end = context.user_data['entities']['person:object'][0]["end"]
+                ent_body = context.user_data['entities']['person:object'][0]["body"]
+                entities = [{
+                    "entity": ent_entity,
+                    "start": ent_start,
+                    "end": ent_end,
+                    "body": ent_body,
+                    "entities": []
+                }]
+            else:
+                entities = []
         else:
             entities = []
 
