@@ -113,8 +113,8 @@ async def userText(update: Update, context: CallbackContext):
     resp = ai.message(user_message)
     if resp['intents']:
         logger.info(f"\tIntent: {resp['intents'][0]['name']}")
-        if resp['intents'][0]['confidence'] > 0.60:
-            detected_intent = resp['intents'][0]['name']
+        detected_intent = resp['intents'][0]['name']
+        if resp['intents'][0]['confidence'] > 0.50:
             random_sample = ""
             for intent in intents["intents"]:
                 if detected_intent == intent["tag"]:
@@ -330,7 +330,8 @@ async def userText(update: Update, context: CallbackContext):
 
         else:
             logger.info("not enough confidence")
-            random_sample = random.choice(intent['responses'])['nap']
+            intent = [i for i in intents["intents"] if i["tag"] == detected_intent][0]
+            random_sample = random.choice([i['responses'] for i in intents["intents"] if i["tag"] == detected_intent][0])["nap"]
             await context.bot.send_message(
                 chat_id=update.message.chat_id, 
                 text=random_sample, 
@@ -341,7 +342,6 @@ async def userText(update: Update, context: CallbackContext):
             )
             
             await reply_with_ollama(update=update, context=context, intent=intent["tag"])
-            await update.message.reply_text(f"{random.choice(qlines)}")
 
     else:
         logger.info("no response from witai")
