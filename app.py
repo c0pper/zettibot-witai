@@ -368,7 +368,7 @@ async def userText(update: Update, context: CallbackContext):
             
         )
         
-        await reply_with_ollama(update=update, context=context, intent=random_intent)
+        # await reply_with_ollama(update=update, context=context, intent=random_intent)
 
     context.user_data["entities"] = resp.get("entities")
     logger.info(f"\tPredefined answer: {random_sample}")
