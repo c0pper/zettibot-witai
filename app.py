@@ -407,12 +407,12 @@ async def handle_feedback(update: Update, context: CallbackContext):
     fn = "" #"\n\n_Funzione sperimentale_"
     await query.edit_message_reply_markup(None)
     
-    if query_feedback["fb"] == 'feedback_yes':
+    if query_feedback.get("fb") == 'feedback_yes':
         logger.info(f"\t\tFeedback: {query_feedback['fb']}")
         with open(filename_yes, "w", encoding="utf8") as file:
             json.dump(feedback, file, indent=4)
         
-        if context.user_data["entities"]:
+        if context.user_data.get("entities"):
             if "person:object" in list(context.user_data["entities"].keys()):
                 ent_entity = context.user_data['entities']['person:object'][0]["name"] + ":" + context.user_data['entities']['person:object'][0]["role"]
                 ent_start = context.user_data['entities']['person:object'][0]["start"]
@@ -446,8 +446,7 @@ async def handle_feedback(update: Update, context: CallbackContext):
             processed_bot_answer + fn + "\n\n_Grazie brother quando vieni al bar mary stai pavat_", 
             parse_mode=ParseMode.MARKDOWN_V2
         )
-    elif query.data == 'feedback_no':
-        feedback["feedback"] = query.data
+    elif query_feedback.get("fb") == 'feedback_no':
         logger.info(f"\t\tFeedback: {query.data}")
         with open(filename_no, "w", encoding="utf8") as file:
             json.dump(feedback, file, indent=4)
