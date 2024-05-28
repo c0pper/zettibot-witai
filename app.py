@@ -412,36 +412,38 @@ async def handle_feedback(update: Update, context: CallbackContext):
         with open(filename_yes, "w", encoding="utf8") as file:
             json.dump(feedback, file, indent=4)
         
-        if context.user_data.get("entities"):
-            if "person:object" in list(context.user_data["entities"].keys()):
-                ent_entity = context.user_data['entities']['person:object'][0]["name"] + ":" + context.user_data['entities']['person:object'][0]["role"]
-                ent_start = context.user_data['entities']['person:object'][0]["start"]
-                ent_end = context.user_data['entities']['person:object'][0]["end"]
-                ent_body = context.user_data['entities']['person:object'][0]["body"]
-                entities = [{
-                    "entity": ent_entity,
-                    "start": ent_start,
-                    "end": ent_end,
-                    "body": ent_body,
-                    "entities": []
-                }]
+        if context.user_data.get("intent"):  # c'è un intent da addestrare
+            if context.user_data.get("entities"):
+                if "person:object" in list(context.user_data["entities"].keys()):
+                    ent_entity = context.user_data['entities']['person:object'][0]["name"] + ":" + context.user_data['entities']['person:object'][0]["role"]
+                    ent_start = context.user_data['entities']['person:object'][0]["start"]
+                    ent_end = context.user_data['entities']['person:object'][0]["end"]
+                    ent_body = context.user_data['entities']['person:object'][0]["body"]
+                    entities = [{
+                        "entity": ent_entity,
+                        "start": ent_start,
+                        "end": ent_end,
+                        "body": ent_body,
+                        "entities": []
+                    }]
+                else:
+                    entities = []
             else:
                 entities = []
-        else:
-            entities = []
 
-        body = [{
-            "text": user_message,
-            "intent": context.user_data["intent"],
-            "entities": entities,
-            "traits": []
-        }]
-        headers = {
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {os.getenv('WITAI_SERVER_TOKEN')}"
-        }
-        train_url = "https://api.wit.ai/utterances"
-        response = requests.post(train_url, headers=headers, data=json.dumps(body))
+            body = [{
+                "text": user_message,
+                "intent": context.user_data["intent"],
+                "entities": entities,
+                "traits": []
+            }]
+            headers = {
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {os.getenv('WITAI_SERVER_TOKEN')}"
+            }
+            train_url = "https://api.wit.ai/utterances"
+            response = requests.post(train_url, headers=headers, data=json.dumps(body))
+            
         await query.edit_message_text(
             processed_bot_answer + fn + "\n\n_Grazie brother quando vieni al bar mary stai pavat_", 
             parse_mode=ParseMode.MARKDOWN_V2
